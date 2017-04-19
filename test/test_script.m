@@ -1,84 +1,59 @@
 matlabrc 
 cd('C:\Users\Robert Bauer\OneDrive\Work\publish\wip\ARtACS\test\')
 addpath('.\..\src')
-%% Artifact Construction
+%% Signal and Artifact Construction
 clear setup
-cphase                  = deg2rad(randi(360));
+% event-related potential
+setup.erpMagnitude      = 1;
 
-setup.erpMagnitude      = 0;
-setup.eoModulation      = 1;
+% noise level
+setup.NoiseLevel        = 0.2;
+
+% event-related impedance modulation -> tacs amplitude modulation
+% can also be understood as event-related power modulation
+% setup.eoFreq            = 22.5;
 setup.eoFreq            = 10;
-%setup.eoPhase           = deg2rad(randi(360));
-setup.eoPhase           = cphase;
-setup.tacsModulation    = 1;
-setup.tacsMagnitude     = 20;
-%setup.tacsPhase         = deg2rad(randi(360));
-setup.tacsPhase         = cphase;
-setup.tacsFreq          = 10.01;
+setup.eoModulation      = 0;
+setup.eoPhase           = 'random';
+%setup.eoPhase           = 0;
 
-setup.NoiseLevel        = .1;
+% tacs parameters
+setup.tacsFreq          = 10;
+setup.tacsMagnitude     = 20;
+setup.tacsSaturate      = Inf;
+% setup.tacsSaturate      = .5;
+setup.tacsPhase         = 'random';
+setup.tacsPhase         = 0;
+
+% level of sinusoidal impedance fluctutations -> tacs amplitude modulation
+setup.tacsModulation    = [2,1]; %magnitude, natural frequency of fluctuations
+
+% signal recording parameters
 setup.Fs                = 1000;
 setup.L                 = 4;
+setup.Foi               = 0:45;
 
-w                       = 1+4.5*sin(0.1*2*pi*[1/setup.Fs :1/setup.Fs :setup.L]);
-[t,e,z]                 = test.makeSignal(setup);
-t                       = test.saturate(t,Inf);
-t                       = test.saturate(t,.9);
-
-setup.tacsFreq          = 10;
 %% Artifact Removal
 clc
 close all
-for np = 2
-    
-
-
-setup.NumberPeriods   = np;
-
-
-figure 
-set(gcf,'Position',[100 100 1200 800],'paperpositionmode','auto')
-
-filtered = cat(1,...
-    t,...
-    filter.dft.local(t,setup.tacsFreq,setup.Fs,setup.NumberPeriods),...
-    filter.dft.complete(t,setup.tacsFreq,setup.Fs),...    
-    filter.kernel.shapeless(t,filter.kernel.create(setup.NumberPeriods,setup.tacsFreq,setup.Fs))...
-    );
-
-
-foi = 0:45;
-do_pwelch = @(xvar)10*log10(pwelch(xvar,setup.Fs,setup.Fs/2,foi,setup.Fs));
-pxx = cat(1,...
-    do_pwelch(filtered(1,:)),...
-    do_pwelch(filtered(2,:)),...
-    do_pwelch(filtered(3,:)),...    
-    do_pwelch(filtered(4,:))...
-    );
-
-pylim = [nanmin(reshape(real(pxx),1,[])),nanmax(reshape(real(pxx),1,[]))];
-titletext = {'Raw','Local DFT','IFFT','Shapeless'};
-ylim = 1.5*max([setup.eoModulation,setup.erpMagnitude]);
-spot = reshape(1:(2*5),2,5)';
-for fidx = 1 : size(filtered,1)
-    subplot(4,2,spot(fidx,1))
-    hold on
-    plot(e,'color',[.8 .8 .8],'linewidth',3)
-    plot(filtered(fidx,:))    
-    title(titletext{fidx})
-    if fidx < 2
-        set(gca,'ylim',[-max(abs(t)), max(abs(t))])
-    else
-        set(gca,'ylim',[-ylim, ylim])
-    end
-
-    
-    subplot(4,2,spot(fidx,2))
-    plot(foi,real(pxx(fidx,:)))
-    grid on
-    set(gca,'ylim',[pylim])
-    title(titletext{fidx})
+rep_num = 200; % we generate 200 trials
+F       = [];
+E       = [];
+Z       = [];
+setup.NumberPeriods = 11;
+for rep = 1 : rep_num
+    [t,e,z]                 = test.generate_signal(setup);
+    [filtered,pxx]          = test.run(t,sum(e),setup,false);
+    F                       = cat(3,F,filtered);
+    E                       = cat(3,E,e);
 end
 
+test.performance(F,e(1,:),100) %and estimate how good we recover the ERP based on bootstrap for n = 100 trials
 
-end
+% test.performance(F,squeeze(E(2,:,:))) % or the event related modulation
+% test.performance(F,squeeze(sum(E))) % or both together 
+% %%
+% f1  = find(z);
+% toi = f1-setup.Fs : f1+setup.Fs;
+% toi = f1-setup.Fs/10 : f1+(setup.Fs*.75);
+% test.performance(F(:,toi,1:100),e(1,toi))
