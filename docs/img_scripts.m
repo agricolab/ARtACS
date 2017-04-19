@@ -45,3 +45,30 @@ set(gca,'YTICK',-5000:100:5000,'YLIM',[2750 3250],'YTICKLABEL',[])
 xlabel('Phase in degree (°)')
 title('Saturation')
 print(gcf,[printfolder,'non_sinusoidality.png'],'-dpng')
+
+%%
+close all
+
+NumberPeriods   = 11;
+tacsFreq        = 10;
+Fs              = 1000;
+kernel = filter.kernel.create(NumberPeriods,tacsFreq,Fs);
+filter.kernel.response(kernel,Fs,2)
+set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
+print(gcf,[printfolder,'shapeless_11_10.png'],'-dpng')
+
+NumberPeriods   = 2;
+tacsFreq        = 10;
+Fs              = 1000;
+kernel = filter.kernel.create(NumberPeriods,tacsFreq,Fs);
+filter.kernel.response(kernel,Fs,2)
+set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
+print(gcf,[printfolder,'shapeless_2_10.png'],'-dpng')
+% 
+% NumberPeriods   = 3;
+% tacsFreq        = 25;
+% Fs              = 1000;
+% kernel = filter.kernel.create(NumberPeriods,tacsFreq,Fs);
+% filter.kernel.response(kernel,Fs)
+% set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
+% print(gcf,[printfolder,'shapeless_3_25.png'],'-dpng')
