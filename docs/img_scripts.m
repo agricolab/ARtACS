@@ -49,6 +49,12 @@ print(gcf,[printfolder,'non_sinusoidality.png'],'-dpng')
 %%
 close all
 
+NumberPeriods   = 5;
+tacsFreq        = 10;
+Fs              = 1000;
+kernel = filter.kernel.create(NumberPeriods,tacsFreq,Fs);
+
+
 NumberPeriods   = 11;
 tacsFreq        = 10;
 Fs              = 1000;

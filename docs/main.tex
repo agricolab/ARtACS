@@ -12,7 +12,9 @@
 \newcommand{\orcid}[1]{ORCID: \href{https://orcid.org/#1}{\tt{\nolinkurl{#1}}}}
 
 \newcommand{\figleg}[1]{\centering\itshape{#1}\/}
-\newcommand{\figref}[1]{(see figure~\ref{#1})}
+\newcommand{\figref}[1]{ (see figure~\ref{#1})}
+%\newcommand{\eqref}[1]{ (see equation~\ref{#1})}
+
 \usepackage[sfdefault,lf]{carlito}
 %% The 'lf' option for lining figuressy
 %% The 'sfdefault' option to make the base font sans serif
@@ -109,7 +111,50 @@ This multi-staged template-approach has therefore of limited utility for on-line
 
 We were interested in development of a computationally fast approach, feasible for online artifact removal. At the same time, the approach was required to account for the non-stationarity of the artifacts amplitude, and the possibility of non-sinusoidal distortion and saturation. Ideally, the approach should allow to estimate physiological signals at the frequency of stimulation, even if physiological oscillations were phase-locked to the stimulation signal.
 
-\section{Methods}
+\section{Approach}
+
+The main idea is that at any given time point $t$, the recorded signal $r(t)$ is a linear superposition of a neurophysiological signal $n(t)$, the stimulation artifact $a(t)$ and a white noise term $e(t)$. The task is to recover $n(t)$ by estimating $a(t)$ and $e(t)$ and subtracting from $r(t)$.
+
+\begin{eqnarray}
+    r(t) = n(t) + a(t) + e(t)\\
+    n(t) = r(t) - a(t) - e(t)
+\end{eqnarray}
+
+\subsection{Artifact Estimation}
+Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}, while any neurophysiological signals $n$ were absent. We could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ from any~\gls{tacs} one period length $\tau_a$ earlier~\eqref{eq:ArtSim}.
+
+\begin{align}
+    r(t) & = a(t) + e(t)\\
+    \hat{a}(t) & \sim r(t-\tau_a)\label{eq:ArtSim}\\
+    \hat{a}(t) & \approx \sum_{n=1}^{N} \frac{r(t - (n~\tau_a))}{N}\label{eq:StatOpt}
+\end{align}
+
+Because the white noise term $e$ is superpositioned on $r$, and because $\langle e\rangle$ converges asymptotically to zero with increased sample size, an aproach optimal to achieve an unbiased estimate of the amplitude of a stationary artifact would be to average across as many earlier periods as possible~\eqref{eq:StatOpt}. Subsequently, this estimate can be used to  remove the artifact from $r$.
+
+\subsection{Scaling}
+
+
+\begin{align}
+    \hat{a}(t) & \approx \sum_{n=1}^{N} w_n r(t - (n~\tau_a))\label{eq:Weighted}
+\end{align}
+
+Practice of linearization of dynamical systems -> linear decrease with n
+by using  the triangular number $T_N$
+
+\begin{align}
+    T_N & = \frac{N(N+1)}{2}\\
+    w_n & = \frac{N-n+1}{T_N}\\
+        & = \frac{2(N-n+1)}{N(N+1)}
+\end{align}
+
+and the physiological signal exhibit different time-constants
+ we can estimate
+
+Consider that the modulation of the
+
+highly similar  amplitude at any given time-point as during earlier periods plus a white noise term. We can scale how far back the
+
+convolution with a kernel removing any signal with the same period length as the \gls{tacs} artifact. Depending on the number of periods,
 
 \section{Evaluation}
 
