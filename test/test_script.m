@@ -18,7 +18,7 @@ setup.eoPhase           = 'random';
 %setup.eoPhase           = 0;
 
 % tacs parameters
-setup.tacsFreq          = 10;
+setup.tacsFreq          = 11.5;
 setup.tacsMagnitude     = 20;
 setup.tacsSaturate      = Inf;
 % setup.tacsSaturate      = .5;
