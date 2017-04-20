@@ -4,7 +4,8 @@ function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
         
     if size(trueSig,2) == size(filteredSig,3)
         eoflag = true;
-    else eoflag = false;
+    else
+        eoflag = false;
     end
         
     trl_num     = size(filteredSig,3);
@@ -42,7 +43,7 @@ function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
         set(gcf,'Position',[100 100 1200 800],'paperpositionmode','auto')
 
         taxis       = 1:length(trueSig);
-        titletext   = {'Raw','Local DFT','IFFT','Shapeless'};       
+        titletext   = {'Raw (One Trial)','Adaptive DFT','I-FFT','Causal SMA'};       
         spot        = reshape(1:(2*5),2,5)';
         for fidx = 1 : filter_num
             subplot(4,2,spot(fidx,1))
@@ -57,7 +58,11 @@ function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
             if ~eoflag
                 plot(trueSig,'color',[.8 .8 .8],'linewidth',3)            
                 hold on
-                plot(taxis,mean(filteredSig(fidx,:,:),3))
+                if fidx == 1
+                    plot(taxis,mean(filteredSig(1,:,1),3))
+                else
+                    plot(taxis,mean(filteredSig(fidx,:,:),3))
+                end
             else
                 plot(mean(abs(hilbert(trueSig)),2),'color',[.8 .8 .8],'linewidth',3)            
                 hold on

@@ -18,7 +18,7 @@ setup.eoPhase           = 'random';
 %setup.eoPhase           = 0;
 
 % tacs parameters
-setup.tacsFreq          = 11.5;
+setup.tacsFreq          = 10;
 setup.tacsMagnitude     = 20;
 setup.tacsSaturate      = Inf;
 % setup.tacsSaturate      = .5;
@@ -26,13 +26,14 @@ setup.tacsPhase         = 'random';
 setup.tacsPhase         = 0;
 
 % level of sinusoidal impedance fluctutations -> tacs amplitude modulation
-setup.tacsModulation    = [2,1]; %magnitude, natural frequency of fluctuations
+setup.tacsModulation    = [3,1]; %magnitude, natural frequency of fluctuations
 
 % signal recording parameters
 setup.Fs                = 1000;
 setup.L                 = 4;
 setup.Foi               = 0:45;
-
+%
+test.run(t,sum(e),setup,true);
 %% Artifact Removal
 clc
 close all
@@ -40,13 +41,14 @@ rep_num = 200; % we generate 200 trials
 F       = [];
 E       = [];
 Z       = [];
-setup.NumberPeriods = 11;
+setup.NumberPeriods = 3;
 for rep = 1 : rep_num
     [t,e,z]                 = test.generate_signal(setup);
     [filtered,pxx]          = test.run(t,sum(e),setup,false);
     F                       = cat(3,F,filtered);
     E                       = cat(3,E,e);
 end
+
 
 test.performance(F,e(1,:),100) %and estimate how good we recover the ERP based on bootstrap for n = 100 trials
 

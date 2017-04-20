@@ -42,10 +42,9 @@
 \pagestyle{plain}
 \title{Shapeless Adaptive Removal of the Transcranial Alternating Current Stimulation Artifact from the Electroencephalogram}
 \author[1,*]{Robert Guggenberger}
-\author[2]{Falk Schlegelmilch}
 \author[1]{Alireza Gharabaghi}
 \affil[1]{Department for Translational Neurosurgery, University Hospital Tübingen}
-\affil[2]{neuroConn GmbH, Ilmenau}
+
 \affil[*]{Corresponding author: \email{robert.guggenberger@posteo.eu}}
 \date{\today}
 
@@ -61,6 +60,7 @@
 \newacronym{tacs}{tACS}{transcranial alternating current stimulation}
 \newacronym{tms}{TMS}{transcranial magnetic stimulation}
 \newacronym{tpca}{tPCA}{temporal principal component analysis}
+\newacronym{sma}{SMA}{superposition of moving averages}
 \makeglossaries{}
 
 % --------------------------------------------------------------------------
@@ -92,67 +92,70 @@ Yet, detailed analysis of the stimulation artifact provides evidence that the ar
 Consider furthermore that event-related responses like modulation of skin impedance can also affect the scalp conductance at stimulation electrodes. This would introduce event-related amplitude modulation of the stimulation artifact. In that regard, disentangling true signal from the stimulation artifact stays technically challenging.
 
 \subsection{Artifact Distortion}
-\begin{figure}
+
+Ideally, the stimulation artifict of~\gls{tacs} resembles a sinusoid. Yet, practical experience suggests that the signal is usually distorted to various degrees~\figref{fig:nonsinus}.
+
+\begin{figure}[hbtp]
     \includegraphics[width=\textwidth]{./img/non_sinusoidality.png}
     \caption{Non-Sinusoidality}
-    \figleg{It shows the distortion/saturation of the sinus waveform using two exemplary trials of \gls{tacs}-\gls{eeg}. The gray traces indicate nine invididual periods, while the red trace indicates their average. In the left figure, noe the periodic, but non-sinusoidal waveform. In the right figure, note the saturation.}\label{fig:nonsinus}
+    \figleg{It shows the distortion/saturation of the sinus waveform using two exemplary trials of \gls{tacs}-\gls{eeg}. The gray traces indicate nine invididual periods, while the red trace indicates their average. In the left figure, note the periodic, but non-sinusoidal waveform. In the right figure, note the saturation.}\label{fig:nonsinus}
 \end{figure}
 
-Ideally, the stimulation artifect resembles a sinusoid. Yet, practical experience suggests that the signal is usually distorted to various degrees.~\figref{fig:nonsinus}.
-
-A major reason for distortion by amplifier saturation, i.e.\ the stimulation artifact exhibits an amplitude to large for the dynamic range of the amplifier, causing the signal to be cut off. Even when close to the saturation threshold, non-linearites in the amplifier slew rate can distort the shape. Additionally, the temporally and spatially uneven impedance distribution has been suggested to cause distortion, rendering the resulting waveform periodic, but non-sinusoidal.
+The temporally and spatially uneven impedance distribution has been suggested as cause of distortion, rendering the resulting waveform periodic, but non-sinusoidal. A major problem is amplifier saturation, i.e.\ the stimulation artifact exhibiting an amplitude to large for the dynamic range of the amplifier, causing the signal to be cut off and information to be lost. Additionally, non-linearites in the amplifier slew rate can distort the shape even when the signal is close to the saturation threshold.
 
 \subsection{Computational Demands}
 
-Methods based on adaptive template construction and \gls{tpca}~\citep{Niazy_2005} have been explored for removal of  non-stationary and misshaped \gls{tacs} artifacts~\citep{Helfrich_2014}.  Consider that the process of template construction, the estimation of accurate weights for initial removal and the removal of residual artifacts using  \gls{tpca}  artifact removal is computationally cumbersome, and often requires off-line analysis supported by visual inspection.
-This multi-staged template-approach has therefore of limited utility for on-line artifact removal. Furthermore, a critical evaluation has suggested that the residual artifact spans several principal components, and a sufficient artifact removal is not possible with \gls{tpca} \citep{Noury_2016}.
+Methods based on adaptive template construction and \gls{tpca}~\citep{Niazy_2005} have been explored for removal of  non-stationary and misshaped \gls{tacs} artifacts~\citep{Helfrich_2014}.  Consider that the process of template construction, the estimation of accurate weights for removal by template subtraction and the suqsequent removal of residual artifacts using \gls{tpca} is computationally cumbersome. Additionally, it often requires off-line analysis supported by visual inspection.
+Such a multi-staged template-approach is therefore of limited utility for on-line artifact removal. Furthermore, critical evaluation has suggested that the residual artifact spans several principal components, and a sufficient artifact removal is therefore not possible with \gls{tpca} \citep{Noury_2016}.
 
 \subsection{Rationale}
 
-We were interested in development of a computationally fast approach, feasible for online artifact removal. At the same time, the approach was required to account for the non-stationarity of the artifacts amplitude, and the possibility of non-sinusoidal distortion and saturation. Ideally, the approach should allow to estimate physiological signals at the frequency of stimulation, even if physiological oscillations were phase-locked to the stimulation signal.
+We were interested in development of a computationally fast approach, feasible for online artifact removal. At the same time, the approach was required to account for the dynamical modulation of the artifact amplitude, and the possibility of non-sinusoidal distortion and saturation. Ideally, the approach should allow to estimate physiological signals at the frequency of stimulation, even if physiological oscillations were phase-locked to the stimulation signal.
 
 \section{Approach}
 
-The main idea is that at any given time point $t$, the recorded signal $r(t)$ is a linear superposition of a neurophysiological signal $n(t)$, the stimulation artifact $a(t)$ and a white noise term $e(t)$. The task is to recover $n(t)$ by estimating $a(t)$ and $e(t)$ and subtracting from $r(t)$.
+The main idea is that at any given time point $t$, the recorded signal $r(t)$ is a linear super\-position of a neurophysiological signal $n(t)$, the stimulation artifact $a(t)$ and a white noise term $e(t)$. The task is to recover $n(t)$ by estimating $a(t)$ and $e(t)$ and subtracting from $r(t)$.
 
 \begin{eqnarray}
     r(t) = n(t) + a(t) + e(t)\\
     n(t) = r(t) - a(t) - e(t)
 \end{eqnarray}
 
-\subsection{Artifact Estimation}
-Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}, while any neurophysiological signals $n$ were absent. We could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ from any~\gls{tacs} one period length $\tau_a$ earlier~\eqref{eq:ArtSim}.
+\subsection{Shapeless Estimation}
+Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}. At the same time, assume that neurophysiological signals $n$ were absent, but the noise term $e$ remains~\eqref{eq:Shapeless}. Then, we could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ from any~\gls{tacs} one period length $\tau_a$ earlier~\eqref{eq:ArtSim}.
 
 \begin{align}
-    r(t) & = a(t) + e(t)\\
-    \hat{a}(t) & \sim r(t-\tau_a)\label{eq:ArtSim}\\
-    \hat{a}(t) & \approx \sum_{n=1}^{N} \frac{r(t - (n~\tau_a))}{N}\label{eq:StatOpt}
+    r(t) & = a(t) + e(t)\label{eq:Shapeless}\\
+    \hat{a}(t) & = r(t-\tau_a)\label{eq:ArtSim}\\
+    \hat{a}(t) & = \sum_{n=1}^{N} \frac{r(t - (n~\tau_a))}{N}\label{eq:StatOpt}
 \end{align}
 
-Because the white noise term $e$ is superpositioned on $r$, and because $\langle e\rangle$ converges asymptotically to zero with increased sample size, an aproach optimal to achieve an unbiased estimate of the amplitude of a stationary artifact would be to average across as many earlier periods as possible~\eqref{eq:StatOpt}. Subsequently, this estimate can be used to  remove the artifact from $r$.
+Consider that the white noise term $e$ is superpositioned on $r$, and  $\langle e\rangle$ converges asymptotically to zero with increased sample size. An optimal approach to achieve an unbiased estimate of the amplitude of a stationary artifact would therefore be to average across as many earlier periods as possible~\eqref{eq:StatOpt}. Subsequently, this estimate can be used to  remove the artifact from $r$.
+\begin{equation}
+    \hat{a}(t) = \sum_{n-M/2}^{n+M/2} \frac{r(t - (n~\tau_a))}{M+1}\label{eq:SMA}
+\end{equation}
 
-\subsection{Scaling}
+Please note that averaging across neighbouring periods $M$~\eqref{eq:SMA} has been suggested before and termed~\gls{sma}~\citep{Kohli_2015}. The approach using only past values~\eqref{eq:StatOpt} returns a causal filter, and would be able to remove the artifact without the delay of $\frac{M \tau_a}{2}$ necessary for~\gls{sma}.
 
+\subsection{Temporal Weighting}
+
+In real applications, stimulation duration is limited and computational contraints exist. This is reflected by the fact we have to use a finite number for $N$. More importantly, the artifact amplitude is non-stationary  and dynamically modulated~\citep{Noury_2016}.
+In these real applications, equation~\eqref{eq:StatOpt} can return a biased estimate, depending on whether the integral of this modulation over the time-period $N\times\tau_a$ converges to zero.
+One approach to deal with this issue is using a time-dependent weighting function instead of a constant $N$~\eqref{eq:Weighted}, with the weighting function designed to reduce a possible bias.
 
 \begin{align}
     \hat{a}(t) & \approx \sum_{n=1}^{N} w_n r(t - (n~\tau_a))\label{eq:Weighted}
 \end{align}
 
-Practice of linearization of dynamical systems -> linear decrease with n
-by using  the triangular number $T_N$
+Usually, we do not know the time-course of artifact modulation. The parameters and states of the dynamical system governing the modulation can be difficult or impossible to estimate.
+Motivated by the concept of approximating a dynamical system by linearization, we decided to use a linearily decreasing weighting function. Yet, note that if the dynamical modulation is known, alternative solutions can exhibit a better suitability.
+A linearily decreasing weighting function can be implemented by using the triangular number $T_N = \frac{N(N+1)}{2}$ for a given $N$ as a normalizing constant and scale the relative weight of an earlier period by its temporal delay $n$~\eqref{eq:Linearized}.
 
 \begin{align}
-    T_N & = \frac{N(N+1)}{2}\\
-    w_n & = \frac{N-n+1}{T_N}\\
-        & = \frac{2(N-n+1)}{N(N+1)}
+    w_n & = \frac{2(N-n+1)}{N(N+1)}\label{eq:Linearized}
 \end{align}
 
-and the physiological signal exhibit different time-constants
- we can estimate
-
-Consider that the modulation of the
-
-highly similar  amplitude at any given time-point as during earlier periods plus a white noise term. We can scale how far back the
+\subsection{Computational Implementation}
 
 convolution with a kernel removing any signal with the same period length as the \gls{tacs} artifact. Depending on the number of periods,
 

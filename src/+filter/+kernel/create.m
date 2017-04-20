@@ -17,6 +17,9 @@ function kernel = create(NumberPeriods,freq,Fs)
 
     
     % Create Kernel
+   % w                      = @(n,N)(2*(N-n+1))./(N*(N+1));
+   % h                      = fliplr([1,-w(1:NumberPeriods-1,NumberPeriods-1)]);
+   % lower implementation is numerically more stable.
     h                      = -(1:NumberPeriods);
     h(end)                 = -sum(h(1:end-1));         
     h                      = h./max(abs(h));                    
