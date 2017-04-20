@@ -44,10 +44,10 @@ function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
 
         taxis       = 1:length(trueSig);
         %titletext   = {'Raw (One Trial)','Adaptive DFT','I-FFT','Causal SMA'};       
-        titletext = {'Raw','Linear','Exponential','Average'};
+        titletext = {'Raw','Average','Linear','Exponential','Gaussian'};
         spot        = reshape(1:(2*5),2,5)';
         for fidx = 1 : filter_num
-            subplot(4,2,spot(fidx,1))
+            subplot(5,2,spot(fidx,1))
             hold on            
             plot(koi,KX(fidx,:))    
             title(titletext{fidx})
@@ -55,7 +55,7 @@ function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
             xlabel('R²')
             ylabel('kde')
 
-            subplot(4,2,spot(fidx,2))
+            subplot(5,2,spot(fidx,2))
             if ~eoflag
                 plot(trueSig,'color',[.8 .8 .8],'linewidth',3)            
                 hold on

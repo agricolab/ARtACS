@@ -14,7 +14,7 @@ function [t,e,z] = generate_signal(setup)
     if strcmpi(setup.eoPhase,'random')
         eoPhase = deg2rad(randi(360)); 
     elseif strcmpi(setup.eoPhase,'equal')        
-        if ~strcmpi(setup.tacsPhase,'equal'), warning('SigPhase:eo','eoPhase equal, but tacsPhase not!') ; end
+        if ~strcmpi(setup.tacsPhase,'equal'), warning('SIG:eo','eoPhase equal, but tacsPhase not!') ; end
             eoPhase = commonPhase;
     else
         eoPhase = setup.eoPhase;
@@ -27,7 +27,7 @@ function [t,e,z] = generate_signal(setup)
     if strcmpi(setup.tacsPhase,'random')
         tacsPhase = deg2rad(randi(360)); 
     elseif strcmpi(setup.tacsPhase,'equal') 
-        if ~strcmpi(setup.eoPhase,'equal'), warning('SigPhase:tacs','tacsPhase  Phase equal, but eoPhase not!'); end
+        if ~strcmpi(setup.eoPhase,'equal'), warning('SIG:tacs','tacsPhase  Phase equal, but eoPhase not!'); end
         tacsPhase = commonPhase;
     else
         tacsPhase = setup.tacsPhase;
@@ -42,12 +42,14 @@ function [t,e,z] = generate_signal(setup)
     noize           = setup.NoiseLevel*brown(length(z));    
     e               = cat(1,erp,eo);    
     x               = tacs+noize+sum(e);    
+    
+    if (setup.tacsSaturate*setup.tacsMagnitude) < (setup.tacsMagnitude-setup.tacsModulation(1)), warning('SIG:saturate','Saturation level will mask sinusoidal amplitude modulation'); end
     t               = saturate(x,setup.tacsSaturate);
 end
 
 
-function t = saturate(t,ThresholdinPercent)
-    threshold   = ThresholdinPercent*max(abs(t));
+function t = saturate(t,ThresholdinPercent)    
+    threshold       = ThresholdinPercent*max(abs(t));
     t(t>threshold) = threshold;t(t<-threshold) = -threshold;    
 end
     

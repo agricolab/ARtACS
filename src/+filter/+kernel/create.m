@@ -1,12 +1,14 @@
 % function kernel = create(NumberPeriods,freq,Fs,wfun)    
 % wfun can be 
 % 'ave' : average
-% 'exp' : exponential
 % 'linear' : linear
+% 'exp' : exponential
+% 'gauss' : half-gaussian
+
 
 function kernel = create(NumberPeriods,freq,Fs,wfun)    
    
-    % check arguments
+    % check whether kernel frequency is possible for the given sampling rate
     
     allowedfreqs = Fs./[1:Fs];
     allowedfreqs(allowedfreqs~=int32(allowedfreqs)) = [];
@@ -18,8 +20,8 @@ function kernel = create(NumberPeriods,freq,Fs,wfun)
     
     % prepare variables
     NumberPeriods   = ceil(NumberPeriods)+1;
-    period          = Fs/freq; 
-   
+    period          = Fs/freq;     
+  
     % Create Kernel
     if nargin < 4
         warning('KERN:WFUN','No proper weighting function defined. Using a constant function ');
@@ -27,15 +29,22 @@ function kernel = create(NumberPeriods,freq,Fs,wfun)
     end
     if strcmpi(wfun,'linear')
          w                     = @(n,N)(2*(N-n+1))./(N*(N+1));
-    elseif strcmpi(wfun,'exp')
-        %w                      = @(n,N)exp(fliplr(n))./sum(exp(n));
-        tau                     = 5;
-        w                       = @(n,N)exp(fliplr(tau*n./N))./sum(exp(tau*n./N));
+    elseif strcmpi(wfun,'exp')        
+        tau                     = 5;        
+        nrm                     = @(N)1./(((1-exp(tau/N))./(1-exp(tau))))-1;
+        w                       = @(n,N)exp((tau./N)*(N-n))./nrm(N);
+    elseif strcmpi(wfun,'gauss')
+        sigma                   = 3;
+        npdf                    = @(x)exp(-(x.^2)./(2*sigma.^2))./(sigma*sqrt(2*pi));
+        w                       = @(n,N)npdf(n)./sum(npdf(n));
     elseif strcmpi(wfun,'ave')
-        w                      = @(n,N)repmat(1/N,1,max(n));
+        w                       = @(n,N)repmat(1/N,1,max(n));
+    elseif strcmpi(wfun,'cos')        
+        supfun                 = @(N)1+(cos(2*pi*linspace(0,.5,N))./2);
+        w                      = @(n,N)supfun(N)./sum(supfun(N));
     else
        warning('KERN:WFUN','No proper weighting function defined. Using a constant function ');
-       w                      = @(n,N)repmat(1/N,1,max(n));
+       w                        = @(n,N)repmat(1/N,1,max(n));
     end
     
     h                      = fliplr([1,-w(1:NumberPeriods-1,NumberPeriods-1)]);      

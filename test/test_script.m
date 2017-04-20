@@ -21,40 +21,35 @@ setup.eoPhase           = 'random';
 setup.tacsFreq          = 10;
 setup.tacsMagnitude     = 20;
 setup.tacsSaturate      = Inf;
-setup.tacsSaturate      = .5;
+%setup.tacsSaturate      = .5;
 setup.tacsPhase         = 'random';
-setup.tacsPhase         = 0;
+%setup.tacsPhase         = 0;
 
 % level of sinusoidal impedance fluctutations -> tacs amplitude modulation
-setup.tacsModulation    = [3,1]; %magnitude, natural frequency of fluctuations
+setup.tacsModulation    = [1,1]; %magnitude, natural frequency of fluctuations
 
 % signal recording parameters
 setup.Fs                = 1000;
 setup.L                 = 4;
 setup.Foi               = 0:45;
-
 %% Artifact Removal
+
+    setup.NumberPeriods     = 4;
+    [t,e,z]                 = test.generate_signal(setup);
+    [filtered,pxx]          = test.run(t,sum(e),setup,true);
+%%
 clc
 close all
 rep_num = 200; % we generate 200 trials
 F       = [];
 E       = [];
 Z       = [];
-setup.NumberPeriods = 5;
+setup.NumberPeriods = 17;
 for rep = 1 : rep_num
     [t,e,z]                 = test.generate_signal(setup);
     [filtered,pxx]          = test.run(t,sum(e),setup,false);
     F                       = cat(3,F,filtered);
     E                       = cat(3,E,e);
 end
-
-
-test.performance(F,e(1,:),100) %and estimate how good we recover the ERP based on bootstrap for n = 100 trials
-
-% test.performance(F,squeeze(E(2,:,:))) % or the event related modulation
-% test.performance(F,squeeze(sum(E))) % or both together 
-% %%
-% f1  = find(z);
-% toi = f1-setup.Fs : f1+setup.Fs;
-% toi = f1-setup.Fs/10 : f1+(setup.Fs*.75);
-% test.performance(F(:,toi,1:100),e(1,toi))
+%and estimate how good we recover the ERP based on bootstrap for n = 100 trials
+test.performance(F,e(1,:),100) 
