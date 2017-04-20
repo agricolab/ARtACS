@@ -40,7 +40,7 @@
 \includegraphics[width=4cm]{img/engrXiv_banner.png}
 }
 \pagestyle{plain}
-\title{Shapeless Adaptive Removal of the Transcranial Alternating Current Stimulation Artifact from the Electroencephalogram}
+\title{Adaptive Removal of the Transcranial Alternating Current Stimulation Artifact from the Electroencephalogram}
 \author[1,*]{Robert Guggenberger}
 \author[1]{Alireza Gharabaghi}
 \affil[1]{Department for Translational Neurosurgery, University Hospital Tübingen}
@@ -52,7 +52,6 @@
 \usepackage{hyperref}
 \usepackage{cleveref}
 \hypersetup{hidelinks = true}
-
 
 \usepackage[nonumberlist,acronym]{glossaries}
 % abbreviations:
@@ -121,43 +120,91 @@ The main idea is that at any given time point $t$, the recorded signal $r(t)$ is
     n(t) = r(t) - a(t) - e(t)
 \end{eqnarray}
 
-\subsection{Shapeless Estimation}
+\subsection{Periodic Estimation}
 Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}. At the same time, assume that neurophysiological signals $n$ were absent, but the noise term $e$ remains~\eqref{eq:Shapeless}. Then, we could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ from any~\gls{tacs} one period length $\tau_a$ earlier~\eqref{eq:ArtSim}.
 
 \begin{align}
     r(t) & = a(t) + e(t)\label{eq:Shapeless}\\
-    \hat{a}(t) & = r(t-\tau_a)\label{eq:ArtSim}\\
-    \hat{a}(t) & = \sum_{n=1}^{N} \frac{r(t - (n~\tau_a))}{N}\label{eq:StatOpt}
+    \hat{a}(t) & = r(t-\tau_a)\label{eq:ArtSim}
 \end{align}
 
-Consider that the white noise term $e$ is superpositioned on $r$, and  $\langle e\rangle$ converges asymptotically to zero with increased sample size. An optimal approach to achieve an unbiased estimate of the amplitude of a stationary artifact would therefore be to average across as many earlier periods as possible~\eqref{eq:StatOpt}. Subsequently, this estimate can be used to  remove the artifact from $r$.
+Consider that the white noise term $e$ is superpositioned on $r$, and  $\langle e\rangle$ converges asymptotically to zero with increased sample size. An optimal approach to achieve an unbiased estimate of the amplitude of a stationary artifact would therefore be to average across as many earlier periods as possible~\eqref{eq:Average}. Subsequently, this estimate can be used to  remove the artifact from $r$.
+
+\begin{equation}
+    \hat{a}(t) = \sum_{n=1}^{N} \frac{r(t - (n~\tau_a))}{N}\label{eq:Average}
+\end{equation}
+
+
+Please note that averaging across neighbouring periods $M$~\eqref{eq:SMA} has been suggested before and termed~\gls{sma} by~\cite{Kohli_2015}.
+
 \begin{equation}
     \hat{a}(t) = \sum_{n-M/2}^{n+M/2} \frac{r(t - (n~\tau_a))}{M+1}\label{eq:SMA}
 \end{equation}
 
-Please note that averaging across neighbouring periods $M$~\eqref{eq:SMA} has been suggested before and termed~\gls{sma}~\citep{Kohli_2015}. The approach using only past values~\eqref{eq:StatOpt} returns a causal filter, and would be able to remove the artifact without the delay of $\frac{M \tau_a}{2}$ necessary for~\gls{sma}.
+The approach using only past values~\eqref{eq:Average} returns a causal filter. A causal filter would be able to remove the artifact without the delay of $\frac{M \tau_a}{2}$ necessary for~\gls{sma}.
+Additionally, if applied offline on time-flipped signals, a causal filter has the potential to mininize distortion of neurophsyiological signals by mirroring a strong event-related potential.
 
 \subsection{Temporal Weighting}
 
 In real applications, stimulation duration is limited and computational contraints exist. This is reflected by the fact we have to use a finite number for $N$. More importantly, the artifact amplitude is non-stationary  and dynamically modulated~\citep{Noury_2016}.
-In these real applications, equation~\eqref{eq:StatOpt} can return a biased estimate, depending on whether the integral of this modulation over the time-period $N\times\tau_a$ converges to zero.
+In these real applications, equation~\eqref{eq:Average} can return a biased estimate, depending on whether the integral of this modulation over the time-period $N\times\tau_a$ converges to zero.
 One approach to deal with this issue is using a time-dependent weighting function instead of a constant $N$~\eqref{eq:Weighted}, with the weighting function designed to reduce a possible bias.
 
+\begin{equation}
+    \hat{a}(t) = \sum_{n=1}^{N} w_n r(t - (n~\tau_a))\label{eq:Weighted}
+\end{equation}
+
+Note that if the dynamical modulation is known or can be estimated sufficiently, an optimal weighting function can be constructed. Sadly, we rarely know the time course of artifact modulation in advance. Furthermore, the dynamical system governing the modulation can be difficult or impossible to estimate. There are several options to approximate the dynamical system, and justify a generic weighting function.
+
+\subsubsection{Linear Weighting}
+
+One solution is by linearization, e.g.\ using a linear decreasing weighting function. This can be implemented by using the triangular number $T_N = \frac{N(N+1)}{2}$ for a given $N$ as a normalizing constant. Hence, equation~\eqref{eq:Linear} returns weights for earlier periods based on their linear temporal delay.
+
 \begin{align}
-    \hat{a}(t) & \approx \sum_{n=1}^{N} w_n r(t - (n~\tau_a))\label{eq:Weighted}
+    w_n & = \frac{2(N+1-n)}{N(N+1)}\label{eq:Linear}
 \end{align}
 
-Usually, we do not know the time-course of artifact modulation. The parameters and states of the dynamical system governing the modulation can be difficult or impossible to estimate.
-Motivated by the concept of approximating a dynamical system by linearization, we decided to use a linearily decreasing weighting function. Yet, note that if the dynamical modulation is known, alternative solutions can exhibit a better suitability.
-A linearily decreasing weighting function can be implemented by using the triangular number $T_N = \frac{N(N+1)}{2}$ for a given $N$ as a normalizing constant and scale the relative weight of an earlier period by its temporal delay $n$~\eqref{eq:Linearized}.
+\subsubsection{Exponential Weighting}
+
+Motivated by the fact that exponentials are an essential building block of signal processing, an alternative approach could be an exponential weighting function. The time constant $\tau_e$ of an exponential controls its decay across time. To maintain the shape across different $N$, we consider it reasonable to normalize the time constant $\tau_e$ by $N$~\eqref{NormTau}. Hence, equation~\eqref{eq:Expo} returns weights for earlier periods based on their exponential temporal delay.
+
+\begin{equation}
+    w_n = \frac{e^{nx}}{k}\label{eq:Expo}
+\end{equation}
+with
+\begin{align}
+    k   & = \sum_{n=1}^{N}e^{nx} = \frac{1-e^{Nx}}{1-e^{x}}-1\\
+    x   & = \frac{\tau_e}{N}\label{eq:NormTau}
+\end{align}
+
+\subsubsection{Gaussian Weighting}
+
+An alternative approach could be an exponential weighting function.
+
+ number $T_N = \frac{N(N+1)}{2}$ for a given $N$ as a normalizing constant and scale the relative weight of an earlier period by its temporal delay $n$~\eqref{eq:Gauss}.
 
 \begin{align}
-    w_n & = \frac{2(N-n+1)}{N(N+1)}\label{eq:Linearized}
+    w_n & = \frac{2(N+1-n)}{N(N+1)}\label{eq:Gauss}
 \end{align}
 
 \subsection{Computational Implementation}
 
-convolution with a kernel removing any signal with the same period length as the \gls{tacs} artifact. Depending on the number of periods,
+We implemented the approach by construction a kernel with the respective weights in period length distance. This kernel can subsequently be used to remove the artifact by convolution. Short of changing the weighting function~\eqref{eq:Weighted}, the key parameter to tune the kernel is number of periods $N$.
+
+Consider an exemplary
+
+
+
+
+
+
+
+
+
+
+
+ For offline analysis, and to keep the kernel causal, we centered it by left-padding with zeros.
+ Depending on the number of periods,
 
 \section{Evaluation}
 
