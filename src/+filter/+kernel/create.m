@@ -1,5 +1,10 @@
-% function kernel = create(NumberPeriods,freq,Fs)    
-function kernel = create(NumberPeriods,freq,Fs)    
+% function kernel = create(NumberPeriods,freq,Fs,wfun)    
+% wfun can be 
+% 'ave' : average
+% 'exp' : exponential
+% 'linear' : linear
+
+function kernel = create(NumberPeriods,freq,Fs,wfun)    
    
     % check arguments
     
@@ -14,14 +19,26 @@ function kernel = create(NumberPeriods,freq,Fs)
     % prepare variables
     NumberPeriods   = ceil(NumberPeriods)+1;
     period          = Fs/freq; 
-
-    
+   
     % Create Kernel
-   % w                      = @(n,N)(2*(N-n+1))./(N*(N+1));
-   % h                      = fliplr([1,-w(1:NumberPeriods-1,NumberPeriods-1)]);
-   % lower implementation is numerically more stable.
-    h                      = -(1:NumberPeriods);
-    h(end)                 = -sum(h(1:end-1));         
+    if nargin < 4
+        warning('KERN:WFUN','No proper weighting function defined. Using a constant function ');
+        wfun = 'linear';
+    end
+    if strcmpi(wfun,'linear')
+         w                     = @(n,N)(2*(N-n+1))./(N*(N+1));
+    elseif strcmpi(wfun,'exp')
+        %w                      = @(n,N)exp(fliplr(n))./sum(exp(n));
+        tau                     = 5;
+        w                       = @(n,N)exp(fliplr(tau*n./N))./sum(exp(tau*n./N));
+    elseif strcmpi(wfun,'ave')
+        w                      = @(n,N)repmat(1/N,1,max(n));
+    else
+       warning('KERN:WFUN','No proper weighting function defined. Using a constant function ');
+       w                      = @(n,N)repmat(1/N,1,max(n));
+    end
+    
+    h                      = fliplr([1,-w(1:NumberPeriods-1,NumberPeriods-1)]);      
     h                      = h./max(abs(h));                    
     kernel                 = [];
 

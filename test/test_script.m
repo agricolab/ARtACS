@@ -21,7 +21,7 @@ setup.eoPhase           = 'random';
 setup.tacsFreq          = 10;
 setup.tacsMagnitude     = 20;
 setup.tacsSaturate      = Inf;
-% setup.tacsSaturate      = .5;
+setup.tacsSaturate      = .5;
 setup.tacsPhase         = 'random';
 setup.tacsPhase         = 0;
 
@@ -32,8 +32,7 @@ setup.tacsModulation    = [3,1]; %magnitude, natural frequency of fluctuations
 setup.Fs                = 1000;
 setup.L                 = 4;
 setup.Foi               = 0:45;
-%
-test.run(t,sum(e),setup,true);
+
 %% Artifact Removal
 clc
 close all
@@ -41,7 +40,7 @@ rep_num = 200; % we generate 200 trials
 F       = [];
 E       = [];
 Z       = [];
-setup.NumberPeriods = 3;
+setup.NumberPeriods = 5;
 for rep = 1 : rep_num
     [t,e,z]                 = test.generate_signal(setup);
     [filtered,pxx]          = test.run(t,sum(e),setup,false);

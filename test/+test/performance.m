@@ -43,7 +43,8 @@ function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
         set(gcf,'Position',[100 100 1200 800],'paperpositionmode','auto')
 
         taxis       = 1:length(trueSig);
-        titletext   = {'Raw (One Trial)','Adaptive DFT','I-FFT','Causal SMA'};       
+        %titletext   = {'Raw (One Trial)','Adaptive DFT','I-FFT','Causal SMA'};       
+        titletext = {'Raw','Linear','Exponential','Average'};
         spot        = reshape(1:(2*5),2,5)';
         for fidx = 1 : filter_num
             subplot(4,2,spot(fidx,1))
