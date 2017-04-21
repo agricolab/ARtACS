@@ -1,20 +1,17 @@
-function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
+function performance(filteredSig,trueSig,rep_num,eoflag,plotflag)
     
+    trueSig = sum(trueSig,1);
+    if nargin <4, eoflag = false; end
+    if eoflag, trueSig = abs(hilbert(sum(trueSig,1))); end
     
-        
-    if size(trueSig,2) == size(filteredSig,3)
-        eoflag = true;
-    else
-        eoflag = false;
-    end
-        
-    trl_num     = size(filteredSig,3);
-    if nargin < 3, rep_num     = min(100,trl_num); end
     filter_num  = size(filteredSig,1);    
+    trl_num     = size(filteredSig,3);    
+    if nargin < 3, rep_num     = min(100,trl_num); end
         
-    KX = [];
-    koi     = 0:0.01:1;    
     
+    % Perform Kernel Density Estimation
+    KX = [];
+    koi     = 0:0.01:1;        
     for fidx = 1 : filter_num
         r       = zeros(rep_num,1);
         if ~eoflag
@@ -27,27 +24,24 @@ function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
             for rep = 1 : rep_num
                 pick    = datasample(1:trl_num,rep_num);             
                 mx      = squeeze(mean(abs(hilbert(filteredSig(fidx,:,pick))),3))';
-                my      = squeeze(mean(abs(hilbert(trueSig(:,pick))),2));
-                r(rep)  = corr(mx,my);
+                r(rep)  = corr(mx,trueSig(:));
             end           
         end
         kx = ksdensity(r,koi,'width',0.01);
         kx = kx./sum(kx);
         KX = cat(1,KX,kx);
-
     end
    
-    
+    % Plot Results
     if nargin < 4 || logical(plotflag(1))
         figure 
         set(gcf,'Position',[100 100 1200 800],'paperpositionmode','auto')
 
-        taxis       = 1:length(trueSig);
-        %titletext   = {'Raw (One Trial)','Adaptive DFT','I-FFT','Causal SMA'};       
-        titletext = {'Raw','Average','Linear','Exponential','Gaussian'};
-        spot        = reshape(1:(2*5),2,5)';
+        taxis       = 1:length(trueSig);      
+        titletext = {'Raw','Average','Linear','Exponential'};
+        spot        = reshape(1:(2*4),2,4)';
         for fidx = 1 : filter_num
-            subplot(5,2,spot(fidx,1))
+            subplot(4,2,spot(fidx,1))
             hold on            
             plot(koi,KX(fidx,:))    
             title(titletext{fidx})
@@ -55,22 +49,18 @@ function [k,a,r] = performance(filteredSig,trueSig,rep_num,plotflag)
             xlabel('R²')
             ylabel('kde')
 
-            subplot(5,2,spot(fidx,2))
+            subplot(4,2,spot(fidx,2))
+            plot(trueSig,'color',[.8 .8 .8],'linewidth',3)            
+            hold on
             if ~eoflag
-                plot(trueSig,'color',[.8 .8 .8],'linewidth',3)            
-                hold on
-                if fidx == 1
-                    plot(taxis,mean(filteredSig(1,:,1),3))
-                else
-                    plot(taxis,mean(filteredSig(fidx,:,:),3))
-                end
-            else
-                plot(mean(abs(hilbert(trueSig)),2),'color',[.8 .8 .8],'linewidth',3)            
-                hold on
-                my  = mean(abs(hilbert(filteredSig(fidx,:,:))),3);
+                my = mean(filteredSig(fidx,:,1:rep_num),3);                    
+            elseif eoflag
+                my  = mean(abs(hilbert(filteredSig(fidx,:,1:rep_num))),3);
                 my  = my-min(my);
-                plot(taxis,my)
+            else
+                error('PERF:PlOT','I do not know whether you want to plot oscillations as amplitudes or wave');
             end
+            plot(taxis,my)
             grid on       
             title(titletext{fidx})
             xlabel('Time')
