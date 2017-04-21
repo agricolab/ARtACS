@@ -49,6 +49,6 @@ function plotPhase(w,H)
     phiLag = ((angle(H))/(pi)*180);  
     plot(w,(mod(phiLag,-360)),'color','k','linewidth',1)    
     xlabel('Frequency (Hz)')
-    ylabel('Phase Response (\phi°)')
+    ylabel('Phase Response (\phiï¿½)')
     grid on
 end
