@@ -131,65 +131,83 @@ The main idea is that at any given time point $t$, the recorded signal $r(t)$ is
 \end{eqnarray}
 
 \subsection{Periodic Estimation}
-Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}. At the same time, assume that neurophysiological signals $n$ were absent, but the noise term $e$ remains~\eqref{eq:Shapeless}. Then, we could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ from any~\gls{tacs} one period length $\tau_a$ earlier~\eqref{eq:ArtSim}.
+Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}. At the same time, assume that neurophysiological signals $n$ were absent, but the noise term $e$ remains~\eqref{eq:Generative}. Then, we could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ from any~\gls{tacs} one period length $p$ earlier~\eqref{eq:Comb}.
 
 \begin{align}
-    r(t) & = a(t) + e(t)\label{eq:Shapeless}\\
-    \hat{a}(t) & = r(t-\tau_a)\label{eq:ArtSim}
+    r(t) & = a(t) + e(t)\label{eq:Generative}\\
+    \hat{a}(t) & = r(t-p)\label{eq:Comb}
 \end{align}
 
 Consider that the white noise term $e$ is superpositioned on $r$, and  $\langle e\rangle$ converges asymptotically to zero with increased sample size.
 
-\subsubsection{Averaging Comb Filter}
-An optimal approach to achieve an unbiased estimate of the amplitude of a stationary artifact would therefore be to average across as many earlier periods as possible~\eqref{eq:Average}. Subsequently, this estimate can be used to  remove the artifact from $r$. Subtraction of a delayed version of the signal is also known as comb filter.
+\subsubsection{Averaged Comb Filter}
+
+An approach to attempt a bias-free estimate of a stationary artifact would therefore be to average across as many earlier periods as possible~\eqref{eq:Average}. Subsequently, this estimate can be used to  remove the artifact from $r$. Subtraction of a delayed version of the signal is also known as comb filter.
 
 \begin{equation}
-    \hat{a}(t) = \sum_{n=1}^{N} \frac{r(t - (n~\tau_a))}{N}\label{eq:Average}
+    \hat{a}(t) = \sum_{n=1}^{N} \frac{r(t - np)}{N}\label{eq:Average}
 \end{equation}
 
-\subsubsection{Superposition of moving averages}
+\subsubsection{Superposition of Moving Averages}
 Please note also that averaging across neighbouring periods $M$~\eqref{eq:SMA} has been suggested before and termed~\gls{sma} by~\cite{Kohli_2015}.
 
 \begin{equation}
-    \hat{a}(t) = \sum_{n-M/2}^{n+M/2} \frac{r(t - (n~\tau_a))}{M+1}\label{eq:SMA}
+    \hat{a}(t) = \sum_{n-M/2}^{n+M/2} \frac{r(t - np)}{M+1}\label{eq:SMA}
 \end{equation}
 
-Consider that the approach using only past values~\eqref{eq:Average} returns a causal filter. A causal filter would be able to remove the artifact without the delay of $\frac{M \tau_a}{2}$ necessary for~\gls{sma}. Additionally, if applied offline on time-flipped signals, a causal filter has the potential to mininize distortion of neurophsyiological signals by mirroring a strong event-related potential.
+Consider that the approach using only past values~\eqref{eq:Average} returns a causal filter. Applied online, a causal filter would be able to remove the artifact without the delay of $\frac{M p}{2}$ necessary for~\gls{sma}. Futhermore,~\gls{sma} is well-defined only for even $M$. If applied offline on time-flipped signals, a causal filter has the potential to mininize distortion of neurophsyiological signals by mirroring a strong event-related potential.
 
-\subsection{Temporal Weighting}
+\subsection{Temporal Decay Weighting}
 
 In real applications, stimulation duration is limited and computational contraints exist. This is reflected by the fact that we have to use a finite number for $N$. More importantly, the artifact amplitude has been described to be non-stationary  and dynamically modulated~\citep{Noury_2016}.
-For such real applications, equation~\eqref{eq:Average} can return a biased estimate, depending on whether the integral of this modulation over the time-period $N\times\tau_a$ converges to zero.
-One attempt to tackle with this issue can be the use of a time-dependent weighting function instead of a constant $N$~\eqref{eq:Weighted}, with the weighting function designed to reduce a possible bias.
+For such real applications, equation~\eqref{eq:Average} can return a biased estimate, depending on whether the integral of this modulation over the time-period $N\times p$ converges to zero.
+One attempt to tackle with this issue can be the use of a time-dependent weighting function instead of a constant $N$~\eqref{eq:Weighted}, with the weighting function designed to reduce a possible bias. Consider that the sum of all weights should be equal to one. This keeps the weighting function in agreement with the average comb filter~\eqref{eq:Average}. It should also return an unbiased estimate in the case of a stationary artifact, and keep the filter stable.
+Consider also a simple comb filter, which subtracts a sample drawn at random from a uniform distribution of the last $N$ periods. Its expected performance is in the long run expected to be would be similar to the averaged comb filter. In that line of reasoning, we could argue that the relevance of a amplitude estimate degrades with delay, justifying non-uniform sampling across past periods.
 
 \begin{equation}
-    \hat{a}(t) = \sum_{n=1}^{N} w_n r(t - (n~\tau_a))\label{eq:Weighted}
+    \hat{a}(t) = \sum_{n=1}^{N} w_n r(t - np)\label{eq:Weighted}
 \end{equation}
 
-Note that if the dynamical modulation is known or can be estimated sufficiently, an optimal weighting function can be constructed. Sadly, we rarely know the time course of artifact modulation in advance. Furthermore, the dynamical system governing the modulation can be difficult or impossible to estimate. There are several options to approximate the dynamical system, and justify a generic weighting function.
+Note that if the dynamical modulation is known or can be estimated sufficiently, an optimal weighting functioncan be constructed. One rarely knows the time course of artifact modulation in advance. Furthermore, the modulation can be difficult or impossible to estimate. I the following sections, we will discuss three weighting functions.
 
 \subsubsection{Linear Weighting}
 
-One solution is linearization, e.g.\ using a linear decreasing weighting function. This can be implemented by using the triangular number $T_N = \frac{N(N+1)}{2}$ for a given $N$ as a normalizing constant. Hence, equation~\eqref{eq:Linear} returns weights for earlier periods based on their linear temporal delay.
+One approach is linearization, e.g.\ using a linear decreasing weighting function. One justification for this approach might be, that dynamical systems are often locally linear. The necessary normalization can easily be implemented by using the triangular number for a given $N$ as normalizing constant $k$~\eqref{eq:NormLinear}. Hence, equation~\eqref{eq:Linear} returns weights for earlier periods based on a linear temporal weight decay.
 
 \begin{equation}
-    w_n = \frac{2(N+1-n)}{N(N+1)}\label{eq:Linear}
+    w_n = \frac{N-n+1}{k}\label{eq:Linear}
+\end{equation}
+with the following normalization
+\begin{equation}
+    k  = \sum_{n=1}^{n} n = \frac{N(N+1)}{2}\label{eq:NormLinear}
 \end{equation}
 
 \subsubsection{Exponential Weighting}
 
-Motivated by the fact that exponentials are an essential building block of signal processing, an alternative approach could be an exponential weighting function. The time constant $\tau_e$ of an exponential controls its decay across time. To maintain the shape across different $N$, we consider it reasonable to normalize the time constant $\tau_e$ by $N$~\eqref{eq:NormTau}. Hence, equation~\eqref{eq:Expo} returns weights for earlier periods based on their exponential temporal delay.
+Motivated by the fact that exponentials are an essential building block of signal processing and especially powerful for decay anaylsis, an alternative approach could be an exponential weighting function. The time constant $\tau$ of an exponential controls its decay across time. To maintain the shape across different $N$, we consider it reasonable to normalize $n$ by $N$. Hence, equation~\eqref{eq:Exp} returns weights for earlier periods based on their exponential temporal weight decay.
 
 \begin{equation}
-    w_n = \frac{e^{x(N-n)}}{k}\label{eq:Expo}
+    w_n = \frac{1}{k} e^{\tau-\tau{(n/N)}}\label{eq:Exp}
 \end{equation}
-\begin{subequations}
-with the following shape parameters
+with the following normalization
+\begin{equation}
+    k  = \sum_{n=1}^{N} e^{\tau-\tau{(n/N)}}\label{eq:NormExp}
+\end{equation}
+
+
+\subsubsection{Gaussian Weighting}
+
+Assuming the the precision of the estimate decreaeses over time, a sampling-distribution rationale motivates a Gaussian weighting function. Using a suitable parameterization, and centering on zero, the inverse of the standard deviation $\frac{1}{\sigma}$ defines the time constant $\tau$ of a Gaussian distribution, which controls its decay.
+To maintain the shape across different $N$, we consider it again reasonable to normalize $n$ by $N$. Hence, equation~\eqref{eq:Gauss} returns weights for earlier periods based on their exponential temporal weight decay.
+
+\begin{equation}
+    w_n = \frac{1}{k} f(n/N)\label{eq:Gauss}
+\end{equation}
+with the following generating function and normalization
 \begin{align}
-    x   & = \frac{\tau_e}{N}\label{eq:NormTau}\\
-    k   & = \sum_{n=1}^{N}e^{nx} = \frac{1-e^{Nx}}{1-e^{x}}-1
+    f  & = \frac{\tau}{\sqrt{2\pi}} e^-\frac{\tau^2x^2}{2}   \\
+    k  & = \sum_{n=1}^{N} f(n/N)\label{eq:NormGauss}
 \end{align}
-\end{subequations}
 
 \subsection{Computational Implementation}
 
@@ -197,29 +215,44 @@ We implemented the approach in Matlab 2016b on a Windows 10 machine. First, we c
 We wanted to evaluate the behavior of the filter in off-line analysis on simulated and real data and decided to use zero-padding for ease of computation.
 
 \subsubsection{Exemplary Kernels}
-Peruse the following exemplary kernels constructed for a sampling rate of 1KHz, a stimulation frequency of 10 Hz and a periodic memory of 5.  Please note that we intened to test the approach in offline analysis. To keep the kernel causal, we centered it by left-padding with zeros.
+Peruse the following exemplary kernels constructed for a sampling rate of 1KHz, a stimulation frequency of 10 Hz and a periodic memory of 10.  Please note that we intened to test the approach in offline analysis. To keep the kernel causal, we centered it by left-padding with zeros.
 
 \begin{figure}[hbtp]
-\begin{subfigure}{.33\textwidth}
-    \includegraphics[width=\textwidth]{img/kernel_ave.png}\\
-    \includegraphics[width=\textwidth]{img/mag_ave.png}
-    \caption{Average Combing Kernel}\label{fig:AverageKernel}
-\end{subfigure}
-\begin{subfigure}{.33\textwidth}
-    \includegraphics[width=\textwidth]{img/kernel_linear.png}\\
-    \includegraphics[width=\textwidth]{img/mag_linear.png}
-    \caption{Linear Weighted Kernel}\label{fig:LinearKernel}
-\end{subfigure}
-\begin{subfigure}{.33\textwidth}
-    \includegraphics[width=\textwidth]{img/kernel_exp.png}\\
-    \includegraphics[width=\textwidth]{img/mag_exp.png}
-    \caption{Exponential Weighted Kernel}\label{fig:ExponentialKernel}
-\end{subfigure}
-\caption{Exemplary Kernels and their respective Magnitude Response}\label{fig:ExemplaryKernels}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=\textwidth]{img/kernel_sma.png}\\
+        \includegraphics[width=\textwidth]{img/mag_sma.png}
+        \caption{Superposition of Moving Averages}\label{fig:SMAKernel}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=\textwidth]{img/kernel_ave.png}\\
+        \includegraphics[width=\textwidth]{img/mag_ave.png}
+        \caption{Average Combing Kernel}\label{fig:AverageKernel}
+    \end{subfigure}
+    \caption{Exemplary Uniform Kernels}\label{fig:UniformKernels}
 \end{figure}
 
-As you can see from figure~\ref{fig:ExemplaryKernels}, the (numerically calculated) magnitude responses of the three approaches are almost identical.
-The key characteristic of each kernel of them is the strong supression of signals at the target frequency defined by the period length and its integer multiples.
+
+\begin{figure}[hbtp]
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/kernel_linear.png}\\
+        \includegraphics[width=\textwidth]{img/mag_linear.png}
+        \caption{Linear Weighted Kernel}\label{fig:LinearKernel}
+    \end{subfigure}
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/kernel_exp.png}\\
+        \includegraphics[width=\textwidth]{img/mag_exp.png}
+        \caption{Exponential Weighted Kernel}\label{fig:ExponentialKernel}
+    \end{subfigure}
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/kernel_gauss.png}\\
+        \includegraphics[width=\textwidth]{img/mag_gauss.png}
+        \caption{Gaussian Weighted Kernel}\label{fig:GaussKernel}
+    \end{subfigure}
+    \caption{Exemplary Decaying Kernels}\label{fig:DecayKernels}
+\end{figure}
+
+As you can see from figure~\ref{fig:ExemplaryKernels}, the (numerically calculated) magnitude responses of the three approaches are highly similar.
+Their keyy characteristic is the strong supression of signals at the target frequency and its integer multiples.
 Yet, note the slightly higher ringing in the passband for the average combing kernel~\ref{fig:AverageKernel} compared to e.g.\ the smooth transition for the exponential weighted kernel~\ref{fig:ExponentialKernel}.
 
 \subsubsection{Code Repository}
@@ -238,6 +271,9 @@ Yet, note the slightly higher ringing in the passband for the average combing ke
 
 \section{Conclusion}
 
+
+Negative weights
+This paper only dicusses real filter weights real, but complex weights might be a solution to tackle artifacts with periods that are not integer divisibles of the sampling frequency.
 
 \bibliographystyle{apalike-oadoi}
 \bibliography{sample}

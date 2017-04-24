@@ -4,9 +4,9 @@
 % 'linear' : linear
 % 'exp' : exponential
 
-function kernel = create(NumberPeriods,freq,Fs,wfun)    
+function kernel = create(NumberPeriods,freq,Fs,wfun,tau)    
       
-    % prepare variables
+    % prepare variables    
     NumberPeriods   = ceil(NumberPeriods)+1;
     period          = Fs/freq;     
     
@@ -26,13 +26,24 @@ function kernel = create(NumberPeriods,freq,Fs,wfun)
         wfun = 'ave';
     end
     
-    if strcmpi(wfun,'linear')
-         w                     = @(n,N)(2*(N-n+1))./(N*(N+1));
+    if strcmpi(wfun,'sma')        
+        w                       = @(n,N)repmat(1/N,1,max(n));    
+    elseif strcmpi(wfun,'linear')
+        k                       = @(N)(N*(N+1))/2;        
+        w                       = @(n,N)(N-n+1)./k(N);            
     elseif strcmpi(wfun,'exp')        
-        tau                     = 5;                    
-        k                       = @(N)(1-exp(tau))./(1-exp(tau/N));
-        w                       = @(n,N)exp((tau./N)*(N-n))./k(N);
-    elseif strcmpi(wfun,'ave')
+        if nargin < 5, tau = 5;  end
+        f                       = @(n,N)exp(tau-(tau*n/N));        
+        w                       = @(n,N)f(n,N)./sum(f(1:N,N));
+    elseif strcmpi(wfun,'gauss')
+        if nargin < 5, tau = 3;  end
+        f                       = @(n,N)(sqrt(tau/(2*pi))*exp((-(tau^2)*((n./N).^2))./2));
+        w                       = @(n,N)f(n,N)./sum(f(1:N,N));
+    elseif strcmpi(wfun,'cauchy')        
+        if nargin < 5, tau = 1;  end        
+        f                       = @(n,N)(1/pi)*(tau./((tau^2)-((N-n)./N)));
+        w                       = @(n,N)f(n,N)./sum(f(1:N,N));
+    elseif strcmpi(wfun,'ave')        
         w                       = @(n,N)repmat(1/N,1,max(n));
     else
        warning('KERN:WFUN','Weighting function unknown. Using average');
@@ -51,4 +62,10 @@ function kernel = create(NumberPeriods,freq,Fs,wfun)
         
     kernel  = [z,1,fliplr(kernel)];
 
+    if strcmpi(wfun,'sma')           
+        kernel  = (kernel+fliplr(kernel))./2;
+        kernel  = [z,kernel,z];
+    end
+    
+    
 end

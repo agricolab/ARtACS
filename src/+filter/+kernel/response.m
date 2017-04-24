@@ -40,6 +40,7 @@ end
     
 function plotMag(w,H)
     plot(w,20*log10(abs(H)),'color','k','linewidth',1)    
+    set(gca,'YLIM',[-30 10])
     xlabel('Frequency (Hz)')
     ylabel('Magnitude Response (dB)')
     grid on   

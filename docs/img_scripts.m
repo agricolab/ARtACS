@@ -51,31 +51,74 @@ print(gcf,[printfolder,'saturation.png'],'-dpng')
 %%
 close all
 
-NumberPeriods   = 5;
+NumberPeriods   = 10;
 tacsFreq        = 10;
 Fs              = 1000;
 
-filter.kernel.response(filter.kernel.create(7,100,Fs,'ave'),setup.Fs,1)
+filter.kernel.response(filter.kernel.create((NumberPeriods./2),tacsFreq,Fs,'sma'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+set(gca,'ylim',[-.75 1.1])
+print(gcf,[printfolder,'kernel_sma.png'],'-dpng')
+
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'ave'),Fs,1)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'kernel_ave.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.create(7,10,Fs,'linear'),setup.Fs,1)
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'linear'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'kernel_linear.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.create(7,10,Fs,'exp'),setup.Fs,1)
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'exp'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'kernel_exp.png'],'-dpng')
 
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,1)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+set(gca,'ylim',[-.75 1.1])
+print(gcf,[printfolder,'kernel_gauss.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.create(7,10,Fs,'ave'),setup.Fs,2,25)
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'cauchy'),Fs,1)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+set(gca,'ylim',[-.75 1.1])
+print(gcf,[printfolder,'kernel_cauchy.png'],'-dpng')
+
+
+%%%%
+
+filter.kernel.response(filter.kernel.create((NumberPeriods./2),tacsFreq,Fs,'sma'),Fs,2,25)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+print(gcf,[printfolder,'mag_sma.png'],'-dpng')
+
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'ave'),Fs,2,25)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'mag_ave.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.create(7,10,Fs,'linear'),setup.Fs,2,25)
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'linear'),Fs,2,25)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'mag_linear.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.create(7,10,Fs,'exp'),setup.Fs,2,25)
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'exp'),Fs,2,25)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'mag_exp.png'],'-dpng')
+
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,2,25)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+print(gcf,[printfolder,'mag_gauss.png'],'-dpng')
+
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'cauchy'),Fs,2,25)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+print(gcf,[printfolder,'mag_cauchy.png'],'-dpng')
+%%
+k = filter.kernel.create(NumberPeriods./2,10,Fs,'ave');
+k = conv(k,fliplr(k),'same');
+%k = (k+fliplr(k))./2;
+filter.kernel.response(k,Fs,2,25)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+%print(gcf,[printfolder,'mag_exp.png'],'-dpng')
+
+filter.kernel.response(k,Fs,1)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+%print(gcf,[printfolder,'kernel_exp.png'],'-dpng')

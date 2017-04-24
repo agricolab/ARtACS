@@ -37,14 +37,13 @@ setup.NumberPeriods = 3;
 %% Artifact Removal
 close all
 filt_type = {'ave','linear','exp'};     
-figure
 [t,e,z]                 = test.generate_signal(setup);
 for fidx = 1 : length(filt_type)
     figure
     set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
     k   = filter.kernel.create(setup.NumberPeriods./2,setup.tacsFreq,setup.Fs,filt_type{fidx});    
     plot(real(filter.kernel.shapeless(sum(e,1),k)))
-    hold onAdd
+    hold on
     plot(sum(e,1),'r')
 end
 
