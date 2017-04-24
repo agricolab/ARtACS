@@ -12,8 +12,7 @@
 \newcommand{\orcid}[1]{ORCID: \href{https://orcid.org/#1}{\tt{\nolinkurl{#1}}}}
 
 \newcommand{\figleg}[1]{\centering\itshape{#1}\/}
-\newcommand{\figref}[1]{ (see figure~\ref{#1})}
-%\newcommand{\eqref}[1]{ (see equation~\ref{#1})}
+\newcommand{\figref}[1]{(see figure~\ref{#1})}
 
 \usepackage[sfdefault,lf]{carlito}
 %% The 'lf' option for lining figuressy
@@ -99,11 +98,11 @@ Figure~\ref{fig:nonsinus} shows examples of distortion and saturation in two rec
 
 \begin{figure}[hbtp]
     \begin{subfigure}{.5\textwidth}
-    \includegraphics[width=\textwidth]{./img/distortion.png}
+    \includegraphics[width=\textwidth]{./img/intro/distortion.png}
     \caption{Distortion}\label{fig:distortion}
     \end{subfigure}
     \begin{subfigure}{.5\textwidth}
-    \includegraphics[width=\textwidth]{./img/saturation.png}
+    \includegraphics[width=\textwidth]{./img/intro/saturation.png}
     \caption{Saturation}\label{fig:saturation}
     \end{subfigure}
     \caption{Examples for loss of sinusoidal fidelity}\label{fig:nonsinus}
@@ -134,9 +133,9 @@ The main idea is that at any given time point $t$, the recorded signal $r(t)$ is
 Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}. At the same time, assume that neurophysiological signals $n$ were absent. Then, we could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ any~\gls{tacs} one period length $p$ earlier~\eqref{eq:Comb}.
 Subtraction of a delayed version of the signal is also known as comb filter. Please note that for discretely sampled signals, this approach only works if the frequency of the artifact is an integer divisible of the sampling frequency.
 
-\begin{align}
-    \hat{a}(t) & = r(t-p)\label{eq:Comb}
-\end{align}
+\begin{equation}
+    \hat{a}(t) = r(t-p)\label{eq:Comb}
+\end{equation}
 
 \subsubsection{Uniform Comb Filter}
 
@@ -169,13 +168,11 @@ One attempt to tackle with this issue can be the use of a time-dependent weighti
 
 If the dynamics behind the modulation of the artifacts amplitude are known or can be estimated sufficiently, an optimal weighting function can be constructed. Although it has been suggested that there are event-dependent component of the amplitude modulation (e.g.\ by heartbeat or respiration~\cite{Noury_2016} or stimulator impedance check~\cite{Neuling_2017}), the dynamical system governing the event-independent amplitude modulation are usually unknown.
 
-One approach to model such a unknown dynamical system is with a Lévy-process. The key characteristics of such a process is that it is governed by randomness of the change between time-points. The increments are independent from each other, and are sampled from a continuous probability distribution with is stationary for the whole duration of the process. In that framework, the uncertainty of the estimate changes as a function of lag. Consider furthermore that we we only consider 
-
 Consider for example a simple comb filter, where we remove the artifact by subtracting the value sampled from any earlier period. Assume now that this values is drawn uniform at random from the last $N$ periods.\footnote{Note, that in the case of full stationarity for the last $N$ periods, its expected performance in the long is expected to be similar to averaging}
-If the system is fully stationary for the last $N$ periods, performance is virtually identical to the comb filter based on averaging~\eqref{eq:Average}. If it is governed by a Levy-Process (at least for the last time-points $N$), the precision of the estimate degrades as a function of the delay. This rationale justifies non-uniform weights.
-In the case of the uniform sampling, we have a single shape parameter $N$, defining how far back we trust a measurement to have the same precision as earlier samples. By controlling the shape parameters of alterative weight functions, we might better match the Levy-Process governing the system. This might allows us to achieve a better artifact estimation and subsequent removal.
+If the system is fully stationary for the last $N$ periods, performance is virtually identical to the comb filter based on averaging~\eqref{eq:Average}. If it is governed by a stochastic process (at least for the last time-points $N$), e.g.\ a Wiener process, the precision of the estimate degrades as a function of the delay. This rationale justifies non-uniform weights.
+In the case of the uniform sampling, we have a single shape parameter $N$, defining how far back we trust a measurement to have the same precision as earlier samples. By controlling the parameters of alternative weight functions, we might better match the stochastic process governing the amplitude modulation. This might allows us to achieve a better artifact estimation and subsequent removal.
 
-The qualifying criteria for these weighting functions are that the sum of all their weights should be equal to one. This keeps the weighting function in agreement with the average~\eqref{eq:Average}, returns an unbiased estimate in the case of full stationarity, and keeps the filter stable. Note that if the Levy-Process  In the following sections, we will discuss three weighting functions.
+The qualifying criteria for these weighting functions are that the sum of all their weights should be equal to one. This keeps the weighting function in agreement with the average~\eqref{eq:Average}, returns an unbiased estimate in the case of full stationarity, and keeps the filter stable. In the following sections, we will discuss three weighting functions assuming non-skewed and unbiased generating processes.
 
 \subsubsection{Linear Weighting}
 
@@ -201,7 +198,6 @@ with the following normalization
     k  = \sum_{n=1}^{N} e^{\tau-\tau{(n/N)}}\label{eq:NormExp}
 \end{equation}
 
-
 \subsubsection{Gaussian Weighting}
 
 Assuming the the precision of the estimate decreaeses over time, a sampling-distribution rationale motivates a Gaussian weighting function. Using a suitable parameterization, and centering on zero, the inverse of the standard deviation $\frac{1}{\sigma^2}$ defines the time constant $\tau$ of a Gaussian distribution, which controls its decay.
@@ -216,61 +212,137 @@ with the following generating function and normalization
     k  & = \sum_{n=1}^{N} f(n/N)\label{eq:NormGauss}
 \end{align}
 
-\subsection{Computational Implementation}
+\subsection{Examples}
 
-We implemented functions for kernel creation in Matlab 2016b on a Windows 10 machine\footnote{https://github.com/agricolab/ARtACS}. First, we constructed a kernel based on the respective weighting functions~\eqref{eq:Weighted} and desired memory, or number of periods $N$. This kernel was then used to remove the artifact in a recording by convolution.
-We wanted to evaluate the behavior of the filter in off-line analysis on simulated and real data and decided to use zero-padding for ease of computation.
+We implemented functions for kernel creation and artifact removal in Matlab 2016b. Additionally, we evaluated them  on simulated and real data. Code\footnote{\url{https://github.com/agricolab/ARtACS}} and data has been published online.
 
-\subsubsection{Exemplary Kernels}
-Peruse the following exemplary kernels constructed for a sampling rate of 1KHz, a stimulation frequency of 10 Hz and a periodic memory of 10.  Please note that we intened to test the approach in offline analysis. To keep the kernel causal, we centered it by left-padding with zeros.
+\subsubsection{Exemplary Causal Kernels}
 
-
-
+Examine the following exemplary kernels constructed for a sampling rate of 1KHz, a stimulation frequency of 10 Hz and a memory of 10~\ref{fig:ExemplaryCausalKernels}.
 
 \begin{figure}[hbtp]
     \begin{subfigure}{.245\textwidth}
-        \includegraphics[width=\textwidth]{img/kernel_ave.png}\\
-        \includegraphics[width=\textwidth]{img/mag_ave.png}
-        \caption{Uniform Kernel}\label{fig:AverageKernel}
+        \includegraphics[width=\textwidth]{img/causal/kernel_ave.png}\\
+        \includegraphics[width=\textwidth]{img/causal/mag_ave.png}
+        \caption{Uniform}\label{fig:UniformKernel}
     \end{subfigure}
     \begin{subfigure}{.245\textwidth}
-        \includegraphics[width=\textwidth]{img/kernel_linear.png}\\
-        \includegraphics[width=\textwidth]{img/mag_linear.png}
-        \caption{Linear Kernel}\label{fig:LinearKernel}
+        \includegraphics[width=\textwidth]{img/causal/kernel_linear.png}\\
+        \includegraphics[width=\textwidth]{img/causal/mag_linear.png}
+        \caption{Linear}\label{fig:LinearKernel}
     \end{subfigure}
     \begin{subfigure}{.245\textwidth}
-        \includegraphics[width=\textwidth]{img/kernel_exp.png}\\
-        \includegraphics[width=\textwidth]{img/mag_exp.png}
-        \caption{Exponential Kernel}\label{fig:ExponentialKernel}
+        \includegraphics[width=\textwidth]{img/causal/kernel_exp.png}\\
+        \includegraphics[width=\textwidth]{img/causal/mag_exp.png}
+        \caption{Exponential~$\tau=4$}\label{fig:ExponentialKernel}
     \end{subfigure}
     \begin{subfigure}{.245\textwidth}
-        \includegraphics[width=\textwidth]{img/kernel_gauss.png}\\
-        \includegraphics[width=\textwidth]{img/mag_gauss.png}
-        \caption{Gaussian Kernel}\label{fig:GaussKernel}
+        \includegraphics[width=\textwidth]{img/causal/kernel_gauss.png}\\
+        \includegraphics[width=\textwidth]{img/causal/mag_gauss.png}
+        \caption{Gaussian~$\tau=3$}\label{fig:GaussKernel}
     \end{subfigure}
-    \caption{Exemplary Weighted Kernels}\label{fig:ExemplaryKernels}
+    \caption{Exemplary Causal Kernels}\label{fig:ExemplaryCausalKernels}
 \end{figure}
 
-As you can see from figure~\ref{fig:ExemplaryKernels}, the (numerically calculated) magnitude responses of the three approaches are highly similar.
-Their keyy characteristic is the strong supression of signals at the target frequency and its integer multiples.
-Yet, note the slightly higher ringing in the passband for the average combing kernel~\ref{fig:AverageKernel} compared to e.g.\ the smooth transition for the exponential weighted kernel~\ref{fig:ExponentialKernel}.
-
-\subsubsection{Code Repository}
+As you can see from figure~\ref{fig:ExemplaryCausalKernels}, the (numerically calculated) magnitude responses of the four approaches are highly similar. Their key characteristic is the strong supression of the target frequency and its integer multiples.
+Yet, note the difference in passbands. We find strong ringing in the passband for the uniform~\ref{fig:UniformKernel} and linear kernel~\ref{fig:LinearKernel}, especially compared to the smooth transitions of the exponential~\ref{fig:ExponentialKernel} or Gaussian kernels~\ref{fig:GaussKernel}.
 
 
+\subsubsection{Exemplary Symmetric Kernels}
+
+Examine the following exemplary kernels constructed with parameters identical to the causal kernels, but symmetric on the origin instead~\ref{fig:ExemplarySymKernels}. Please note that a uniform symmetric would be a~\gls{sma}-Kernel~\eqref{eq:SMA}.
+
+\begin{figure}[hbtp]
+    \begin{subfigure}{.245\textwidth}
+        \includegraphics[width=\textwidth]{img/sym/kernel_ave.png}\\
+        \includegraphics[width=\textwidth]{img/sym/mag_ave.png}
+        \caption{Uniform}\label{fig:UniformSymKernel}
+    \end{subfigure}
+    \begin{subfigure}{.245\textwidth}
+        \includegraphics[width=\textwidth]{img/sym/kernel_linear.png}\\
+        \includegraphics[width=\textwidth]{img/sym/mag_linear.png}
+        \caption{Linear}\label{fig:LinearSymKernel}
+    \end{subfigure}
+    \begin{subfigure}{.245\textwidth}
+        \includegraphics[width=\textwidth]{img/sym/kernel_exp.png}\\
+        \includegraphics[width=\textwidth]{img/sym/mag_exp.png}
+        \caption{Exponential~$\tau=4$}\label{fig:ExponentialSymKernel}
+    \end{subfigure}
+    \begin{subfigure}{.245\textwidth}
+        \includegraphics[width=\textwidth]{img/sym/kernel_gauss.png}\\
+        \includegraphics[width=\textwidth]{img/sym/mag_gauss.png}
+        \caption{Gaussian~$\tau=3$}\label{fig:GaussSymKernel}
+    \end{subfigure}
+    \caption{Exemplary Symmetric Kernels}\label{fig:ExemplarySymKernels}
+\end{figure}
+
+As you can see from figure~\ref{fig:ExemplarySymKernels}, symmetric kernels share key characteristic with the causal kernels, especially the strong suppression. But we also find the presence of ringing for the the uniform~\ref{fig:UniformSymKernel} and linear kernel~\ref{fig:LinearSymKernel}. Note that the passband range appears to be  less narrow for the symmetric compared to the causal filters. Yet the passband response for the Gaussian Kernel exhibits  superior flatness~\ref{fig:GaussSymKernel}.
 
 
+\subsubsection{Exemplary Kernel Tuning}
 
+Examine the following exponential kernels constructed with different $\tau$~\figref{fig:ExemplaryTauTuning} and $N$~\figref{fig:ExemplaryNPTuning}.
 
+\begin{figure}[hbtp]
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/tau/kernel_exp_0.png}\\
+        \includegraphics[width=\textwidth]{img/tau/mag_exp_0.png}
+        \caption{Exponential~$\tau=0$}\label{fig:ExpTau0}
+    \end{subfigure}
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/tau/kernel_exp_5.png}\\
+        \includegraphics[width=\textwidth]{img/tau/mag_exp_5.png}
+        \caption{Exponential~$\tau=5$}\label{fig:ExpTau5}
+    \end{subfigure}
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/tau/kernel_exp_100.png}\\
+        \includegraphics[width=\textwidth]{img/tau/mag_exp_100.png}
+        \caption{Exponential~$\tau=100$}\label{fig:ExpTau100}
+    \end{subfigure}
+    \caption{Exemplary $\tau$ Tuning with $N=10$}\label{fig:ExemplaryTauTuning}
+\end{figure}
 
+In the limiting case of $\tau = 0$, the exponential kernel virtually converges with the uniform kernel~\figref{fig:ExpTau0}. Using a $\tau$ equal to the artifacts period length, the exponential kernel almost fully converges with the simple comb filter~\figref{fig:ExpTau100}. Note that very high $tau$ return an impulse response, and therefore just pass all signals.
 
+\begin{figure}[hbtp]
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/np/kernel_exp_1.png}\\
+        \includegraphics[width=\textwidth]{img/np/mag_exp_1.png}
+        \caption{Exponential~$N=1$}\label{fig:ExNP1}
+    \end{subfigure}
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/np/kernel_exp_10.png}\\
+        \includegraphics[width=\textwidth]{img/np/mag_exp_10.png}
+        \caption{Exponential~$N=5$}\label{fig:ExpNP10}
+    \end{subfigure}
+    \begin{subfigure}{.33\textwidth}
+        \includegraphics[width=\textwidth]{img/np/kernel_exp_50.png}\\
+        \includegraphics[width=\textwidth]{img/np/mag_exp_50.png}
+        \caption{Exponential~$N=50$}\label{fig:ExpNP50}
+    \end{subfigure}
+    \caption{Exemplary $N$ Tuning with $\tau = 3$}\label{fig:ExemplaryNPTuning}
+\end{figure}
 
-
+In the limiting case of $N = 1$, we acquire the simple comb filter~\figref{fig:ExpTau1}. By increasing $N$ we achieve a flattening of the pass-band gain~\figref{fit:ExpNP50}.
 
 \section{Evaluation}
 
+
+First, we constructed a kernel based on the respective weighting functions~\eqref{eq:Weighted} and desired memory, or number of periods $N$. This kernel was then used to remove the artifact in a recording by convolution.
+We wanted to evaluate the behavior of the filter in off-line analysis on simulated and real data and decided to use zero-padding for ease of computation.
+
+
 \section{Conclusion}
 
+One approach to model such a unknown dynamical system is with a Lévy-process. The key characteristics of such a process is that it is governed by randomness of the change between time-points. The increments are independent from each other, and are sampled from a continuous probability distribution with is stationary for the whole duration of the process. In that framework, the uncertainty of the estimate changes as a function of lag. Consider furthermore that we we only consider
+
+Ornstein-Uhlenbeck-Prozess discrete time AR (1) process
+
+\begin{equation}
+    a(t+1) = a(t) + \theta(\mu-a(t)) + e(t+1)
+\end{equation}
+where $\left|\theta\right|<1$ and $\mu$ is the model mean.
+Note that if the stochastic process is skewed or has a non-zero expectation value, the filter might need to add a constant for debiasing the estimation. If the stochastic process allows for jumps, small $N$ might return a more reliable estimation than large $N$.
 
 Negative weights
 This paper only dicusses real filter weights real, but complex weights might be a solution to tackle artifacts with periods that are not integer divisibles of the sampling frequency.
