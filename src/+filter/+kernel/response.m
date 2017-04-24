@@ -1,5 +1,5 @@
 %function response(h,Fs) 
-function response(h,Fs,plot_flag,foi)   
+function response(h,Fs,plot_flag,foi,fig_hdl)   
     if nargin < 4, foi = 100; end
     if nargin < 3, plot_flag = 1; end
     
@@ -8,8 +8,12 @@ function response(h,Fs,plot_flag,foi)
     N       = length(h);           
 
     % plot 
-    figure
-    set(gcf,'Position',[100 100 800 800],'paperpositionmode','auto')    
+    if nargin < 5
+        figure
+        set(gcf,'Position',[100 100 800 800],'paperpositionmode','auto')    
+    else
+        figure(fig_hdl)
+    end
     
     if plot_flag == 1        
         plotKernel(h,N)
@@ -33,7 +37,7 @@ function plotKernel(h,N)
     else
         xtick = linspace(0,N-1,11);
     end    
-    set(gca,'YLim',[min(h)-.1,max(h)+.1],'XTICK',xtick,'XLIM',[0 N+1]);
+    set(gca,'YLim',[min(h)-.1,max(h)+.1],'XTICK',xtick,'XLIM',[0 N+1],'XTICKLABEL',xtick-mean(xtick));
     xlabel('Samples (n)')
     ylabel('Magnitude Response (a.u.)')
 end

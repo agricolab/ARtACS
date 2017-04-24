@@ -4,7 +4,7 @@
 % 'linear' : linear
 % 'exp' : exponential
 
-function kernel = create(NumberPeriods,freq,Fs,wfun,tau)    
+function kernel = causal(NumberPeriods,freq,Fs,wfun,tau)    
       
     % prepare variables    
     NumberPeriods   = ceil(NumberPeriods)+1;
@@ -25,9 +25,7 @@ function kernel = create(NumberPeriods,freq,Fs,wfun,tau)
         wfun = 'ave';
     end
     
-    if strcmpi(wfun,'sma')        
-        w                       = @(n,N)repmat(1/N,1,max(n));     
-    elseif strcmpi(wfun,'linear')
+    if strcmpi(wfun,'linear')
         k                       = @(N)(N*(N+1))/2;        
         w                       = @(n,N)(N-n+1)./k(N);            
     elseif strcmpi(wfun,'exp')        
@@ -47,8 +45,7 @@ function kernel = create(NumberPeriods,freq,Fs,wfun,tau)
     else
        warning('KERN:WFUN','Weighting function unknown. Using average');
        w                        = @(n,N)repmat(1/N,1,max(n));
-    end
-    
+    end    
     
     % construct kernel        
     h                      = fliplr(-w(1:NumberPeriods-1,NumberPeriods-1));                         
@@ -61,10 +58,4 @@ function kernel = create(NumberPeriods,freq,Fs,wfun,tau)
         
     kernel  = [z,1,fliplr(kernel)];
 
-    if strcmpi(wfun,'sma')           
-        kernel  = (kernel+fliplr(kernel))./2;
-        kernel  = [z,kernel,z];
-    end
-    
-    
 end
