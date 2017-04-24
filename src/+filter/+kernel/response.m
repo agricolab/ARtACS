@@ -27,7 +27,7 @@ end
 
 function plotKernel(h,N)    
     h(h==0) = NaN;
-    stem([1:1:N],h,'color','k','linewidth',2)    
+    stem([1:1:N],h,'color','k','linewidth',1)    
     if N < 2
         xtick = N;
     else

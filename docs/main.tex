@@ -131,48 +131,55 @@ The main idea is that at any given time point $t$, the recorded signal $r(t)$ is
 \end{eqnarray}
 
 \subsection{Periodic Estimation}
-Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}. At the same time, assume that neurophysiological signals $n$ were absent, but the noise term $e$ remains~\eqref{eq:Generative}. Then, we could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ from any~\gls{tacs} one period length $p$ earlier~\eqref{eq:Comb}.
+Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}. At the same time, assume that neurophysiological signals $n$ were absent. Then, we could estimate the amplitude of $a$ at any time-point $t$ by using the recorded signal $r$ any~\gls{tacs} one period length $p$ earlier~\eqref{eq:Comb}.
+Subtraction of a delayed version of the signal is also known as comb filter. Please note that for discretely sampled signals, this approach only works if the frequency of the artifact is an integer divisible of the sampling frequency.
 
 \begin{align}
-    r(t) & = a(t) + e(t)\label{eq:Generative}\\
     \hat{a}(t) & = r(t-p)\label{eq:Comb}
 \end{align}
 
-Consider that the white noise term $e$ is superpositioned on $r$, and  $\langle e\rangle$ converges asymptotically to zero with increased sample size.
+\subsubsection{Uniform Comb Filter}
 
-\subsubsection{Averaged Comb Filter}
-
-An approach to attempt a bias-free estimate of a stationary artifact would therefore be to average across as many earlier periods as possible~\eqref{eq:Average}. Subsequently, this estimate can be used to  remove the artifact from $r$. Subtraction of a delayed version of the signal is also known as comb filter.
+Consider that white noise term $e$ is still superpositioned on $r$.  Because white noise $\langle e\rangle$ converges asymptotically to zero with increased sample size, an approach to estimate the artifact amplitude could be to average across as many earlier periods as possible~\eqref{eq:Average}. Subsequently, this estimate can be used to  remove the artifact from $r$.
+In real applications, stimulation duration is limited and computational constraints exist. This is reflected by the fact that we have to use a finite number for $N$.
 
 \begin{equation}
     \hat{a}(t) = \sum_{n=1}^{N} \frac{r(t - np)}{N}\label{eq:Average}
 \end{equation}
 
 \subsubsection{Superposition of Moving Averages}
-Please note also that averaging across neighbouring periods $M$~\eqref{eq:SMA} has been suggested before and termed~\gls{sma} by~\cite{Kohli_2015}.
+
+Please note that averaging across neighbouring periods $M$~\eqref{eq:SMA} has been suggested before and termed~\gls{sma} by~\cite{Kohli_2015}.
 
 \begin{equation}
     \hat{a}(t) = \sum_{n-M/2}^{n+M/2} \frac{r(t - np)}{M+1}\label{eq:SMA}
 \end{equation}
 
-Consider that the approach using only past values~\eqref{eq:Average} returns a causal filter. Applied online, a causal filter would be able to remove the artifact without the delay of $\frac{M p}{2}$ necessary for~\gls{sma}. Futhermore,~\gls{sma} is well-defined only for even $M$. If applied offline on time-flipped signals, a causal filter has the potential to mininize distortion of neurophsyiological signals by mirroring a strong event-related potential.
+Consider that the approach using only past values~\eqref{eq:Average} returns a causal filter. Applied online, a causal filter would be able to remove the artifact without the delay of $(Mp)/2$ necessary for~\gls{sma}. Furthermore,~\gls{sma} is well-defined only for even $M$. This motivates the exploration of causal filters for artifact removal.
 
-\subsection{Temporal Decay Weighting}
+\subsection{Decay Weighting}
 
-In real applications, stimulation duration is limited and computational contraints exist. This is reflected by the fact that we have to use a finite number for $N$. More importantly, the artifact amplitude has been described to be non-stationary  and dynamically modulated~\citep{Noury_2016}.
-For such real applications, equation~\eqref{eq:Average} can return a biased estimate, depending on whether the integral of this modulation over the time-period $N\times p$ converges to zero.
-One attempt to tackle with this issue can be the use of a time-dependent weighting function instead of a constant $N$~\eqref{eq:Weighted}, with the weighting function designed to reduce a possible bias. Consider that the sum of all weights should be equal to one. This keeps the weighting function in agreement with the average comb filter~\eqref{eq:Average}. It should also return an unbiased estimate in the case of a stationary artifact, and keep the filter stable.
-Consider also a simple comb filter, which subtracts a sample drawn at random from a uniform distribution of the last $N$ periods. Its expected performance is in the long run expected to be would be similar to the averaged comb filter. In that line of reasoning, we could argue that the relevance of a amplitude estimate degrades with delay, justifying non-uniform sampling across past periods.
+More importantly, the artifact amplitude has been described to be non-stationary  and dynamically modulated~\citep{Noury_2016,Neuling_2017}.
+For real applications, equation~\eqref{eq:Average} can therefore return a biased estimate, depending on whether the integral of this modulation over the time-period $N\times p$ converges to zero.
+One attempt to tackle with this issue can be the use of a time-dependent weighting function instead of a constant $N$~\eqref{eq:Weighted}, with the weighting function designed to reduce a possible bias.
 
 \begin{equation}
     \hat{a}(t) = \sum_{n=1}^{N} w_n r(t - np)\label{eq:Weighted}
 \end{equation}
 
-Note that if the dynamical modulation is known or can be estimated sufficiently, an optimal weighting functioncan be constructed. One rarely knows the time course of artifact modulation in advance. Furthermore, the modulation can be difficult or impossible to estimate. I the following sections, we will discuss three weighting functions.
+If the dynamics behind the modulation of the artifacts amplitude are known or can be estimated sufficiently, an optimal weighting function can be constructed. Although it has been suggested that there are event-dependent component of the amplitude modulation (e.g.\ by heartbeat or respiration~\cite{Noury_2016} or stimulator impedance check~\cite{Neuling_2017}), the dynamical system governing the event-independent amplitude modulation are usually unknown.
+
+One approach to model such a unknown dynamical system is with a Lévy-process. The key characteristics of such a process is that it is governed by randomness of the change between time-points. The increments are independent from each other, and are sampled from a continuous probability distribution with is stationary for the whole duration of the process. In that framework, the uncertainty of the estimate changes as a function of lag. Consider furthermore that we we only consider 
+
+Consider for example a simple comb filter, where we remove the artifact by subtracting the value sampled from any earlier period. Assume now that this values is drawn uniform at random from the last $N$ periods.\footnote{Note, that in the case of full stationarity for the last $N$ periods, its expected performance in the long is expected to be similar to averaging}
+If the system is fully stationary for the last $N$ periods, performance is virtually identical to the comb filter based on averaging~\eqref{eq:Average}. If it is governed by a Levy-Process (at least for the last time-points $N$), the precision of the estimate degrades as a function of the delay. This rationale justifies non-uniform weights.
+In the case of the uniform sampling, we have a single shape parameter $N$, defining how far back we trust a measurement to have the same precision as earlier samples. By controlling the shape parameters of alterative weight functions, we might better match the Levy-Process governing the system. This might allows us to achieve a better artifact estimation and subsequent removal.
+
+The qualifying criteria for these weighting functions are that the sum of all their weights should be equal to one. This keeps the weighting function in agreement with the average~\eqref{eq:Average}, returns an unbiased estimate in the case of full stationarity, and keeps the filter stable. Note that if the Levy-Process  In the following sections, we will discuss three weighting functions.
 
 \subsubsection{Linear Weighting}
 
-One approach is linearization, e.g.\ using a linear decreasing weighting function. One justification for this approach might be, that dynamical systems are often locally linear. The necessary normalization can easily be implemented by using the triangular number for a given $N$ as normalizing constant $k$~\eqref{eq:NormLinear}. Hence, equation~\eqref{eq:Linear} returns weights for earlier periods based on a linear temporal weight decay.
+One approach is linearization, e.g.\ using a linear decreasing weighting function.  The necessary normalization can easily be implemented by using the triangular number for a given $N$ as normalizing constant $k$~\eqref{eq:NormLinear}. Hence, equation~\eqref{eq:Linear} returns weights for earlier periods based on a linear temporal weight decay.
 
 \begin{equation}
     w_n = \frac{N-n+1}{k}\label{eq:Linear}
@@ -197,7 +204,7 @@ with the following normalization
 
 \subsubsection{Gaussian Weighting}
 
-Assuming the the precision of the estimate decreaeses over time, a sampling-distribution rationale motivates a Gaussian weighting function. Using a suitable parameterization, and centering on zero, the inverse of the standard deviation $\frac{1}{\sigma}$ defines the time constant $\tau$ of a Gaussian distribution, which controls its decay.
+Assuming the the precision of the estimate decreaeses over time, a sampling-distribution rationale motivates a Gaussian weighting function. Using a suitable parameterization, and centering on zero, the inverse of the standard deviation $\frac{1}{\sigma^2}$ defines the time constant $\tau$ of a Gaussian distribution, which controls its decay.
 To maintain the shape across different $N$, we consider it again reasonable to normalize $n$ by $N$. Hence, equation~\eqref{eq:Gauss} returns weights for earlier periods based on their exponential temporal weight decay.
 
 \begin{equation}
@@ -205,50 +212,43 @@ To maintain the shape across different $N$, we consider it again reasonable to n
 \end{equation}
 with the following generating function and normalization
 \begin{align}
-    f  & = \frac{\tau}{\sqrt{2\pi}} e^-\frac{\tau^2x^2}{2}   \\
+    f(x)  & = \sqrt{\frac{\tau}{2\pi}} e^{-(\tau x^2)/2}  \\
     k  & = \sum_{n=1}^{N} f(n/N)\label{eq:NormGauss}
 \end{align}
 
 \subsection{Computational Implementation}
 
-We implemented the approach in Matlab 2016b on a Windows 10 machine. First, we constructed a kernel based on the respective weighting functions~\eqref{eq:Weighted} and desired memory, or number of periods $N$. This kernel was then used to remove the artifact in a recording by convolution.
+We implemented functions for kernel creation in Matlab 2016b on a Windows 10 machine\footnote{https://github.com/agricolab/ARtACS}. First, we constructed a kernel based on the respective weighting functions~\eqref{eq:Weighted} and desired memory, or number of periods $N$. This kernel was then used to remove the artifact in a recording by convolution.
 We wanted to evaluate the behavior of the filter in off-line analysis on simulated and real data and decided to use zero-padding for ease of computation.
 
 \subsubsection{Exemplary Kernels}
 Peruse the following exemplary kernels constructed for a sampling rate of 1KHz, a stimulation frequency of 10 Hz and a periodic memory of 10.  Please note that we intened to test the approach in offline analysis. To keep the kernel causal, we centered it by left-padding with zeros.
 
+
+
+
 \begin{figure}[hbtp]
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=\textwidth]{img/kernel_sma.png}\\
-        \includegraphics[width=\textwidth]{img/mag_sma.png}
-        \caption{Superposition of Moving Averages}\label{fig:SMAKernel}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
+    \begin{subfigure}{.245\textwidth}
         \includegraphics[width=\textwidth]{img/kernel_ave.png}\\
         \includegraphics[width=\textwidth]{img/mag_ave.png}
-        \caption{Average Combing Kernel}\label{fig:AverageKernel}
+        \caption{Uniform Kernel}\label{fig:AverageKernel}
     \end{subfigure}
-    \caption{Exemplary Uniform Kernels}\label{fig:UniformKernels}
-\end{figure}
-
-
-\begin{figure}[hbtp]
-    \begin{subfigure}{.33\textwidth}
+    \begin{subfigure}{.245\textwidth}
         \includegraphics[width=\textwidth]{img/kernel_linear.png}\\
         \includegraphics[width=\textwidth]{img/mag_linear.png}
-        \caption{Linear Weighted Kernel}\label{fig:LinearKernel}
+        \caption{Linear Kernel}\label{fig:LinearKernel}
     \end{subfigure}
-    \begin{subfigure}{.33\textwidth}
+    \begin{subfigure}{.245\textwidth}
         \includegraphics[width=\textwidth]{img/kernel_exp.png}\\
         \includegraphics[width=\textwidth]{img/mag_exp.png}
-        \caption{Exponential Weighted Kernel}\label{fig:ExponentialKernel}
+        \caption{Exponential Kernel}\label{fig:ExponentialKernel}
     \end{subfigure}
-    \begin{subfigure}{.33\textwidth}
+    \begin{subfigure}{.245\textwidth}
         \includegraphics[width=\textwidth]{img/kernel_gauss.png}\\
         \includegraphics[width=\textwidth]{img/mag_gauss.png}
-        \caption{Gaussian Weighted Kernel}\label{fig:GaussKernel}
+        \caption{Gaussian Kernel}\label{fig:GaussKernel}
     \end{subfigure}
-    \caption{Exemplary Decaying Kernels}\label{fig:DecayKernels}
+    \caption{Exemplary Weighted Kernels}\label{fig:ExemplaryKernels}
 \end{figure}
 
 As you can see from figure~\ref{fig:ExemplaryKernels}, the (numerically calculated) magnitude responses of the three approaches are highly similar.

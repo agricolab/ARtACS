@@ -112,6 +112,33 @@ filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'cauchy'),
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'mag_cauchy.png'],'-dpng')
 %%
+close all
+for tau = 1:10
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'gauss',tau),Fs,1)
+set(gcf,'Position',[100 600 400 300],'paperpositionmode','auto')
+set(gca,'ylim',[-.75 1.1])
+
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'gauss',tau),Fs,2,25)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+
+end
+%%
+close all
+for tau = 1: 10,
+% filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'exp',tau),Fs,1)
+% set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+% set(gca,'ylim',[-.75 1.1])
+
+filter.kernel.response(filter.kernel.create(NumberPeriods,tacsFreq,Fs,'exp',tau),Fs,2,25)
+set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+end
+%%
+
+filter.kernel.response(filter.kernel.create(1,tacsFreq,Fs,'ave'),Fs,2,25)
+
+filter.kernel.response(filter.kernel.create(1,tacsFreq,Fs,'ave'),Fs,1)
+
+%%
 k = filter.kernel.create(NumberPeriods./2,10,Fs,'ave');
 k = conv(k,fliplr(k),'same');
 %k = (k+fliplr(k))./2;

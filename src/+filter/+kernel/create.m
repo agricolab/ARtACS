@@ -27,12 +27,12 @@ function kernel = create(NumberPeriods,freq,Fs,wfun,tau)
     end
     
     if strcmpi(wfun,'sma')        
-        w                       = @(n,N)repmat(1/N,1,max(n));    
+        w                       = @(n,N)repmat(1/N,1,max(n));     
     elseif strcmpi(wfun,'linear')
         k                       = @(N)(N*(N+1))/2;        
         w                       = @(n,N)(N-n+1)./k(N);            
     elseif strcmpi(wfun,'exp')        
-        if nargin < 5, tau = 5;  end
+        if nargin < 5, tau = 4;  end
         f                       = @(n,N)exp(tau-(tau*n/N));        
         w                       = @(n,N)f(n,N)./sum(f(1:N,N));
     elseif strcmpi(wfun,'gauss')
