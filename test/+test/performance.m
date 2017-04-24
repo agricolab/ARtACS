@@ -38,10 +38,10 @@ function performance(filteredSig,trueSig,rep_num,eoflag,plotflag)
         set(gcf,'Position',[100 100 1200 800],'paperpositionmode','auto')
 
         taxis       = 1:length(trueSig);      
-        titletext = {'Raw','Average','Linear','Exponential'};
-        spot        = reshape(1:(2*4),2,4)';
+        titletext = {'Raw','Average','Linear','Exponential','Gaussian'};
+        spot        = reshape(1:(2*5),2,5)';
         for fidx = 1 : filter_num
-            subplot(4,2,spot(fidx,1))
+            subplot(5,2,spot(fidx,1))
             hold on            
             plot(koi,KX(fidx,:))    
             title(titletext{fidx})
@@ -49,7 +49,7 @@ function performance(filteredSig,trueSig,rep_num,eoflag,plotflag)
             xlabel('R²')
             ylabel('kde')
 
-            subplot(4,2,spot(fidx,2))
+            subplot(5,2,spot(fidx,2))
             plot(trueSig,'color',[.8 .8 .8],'linewidth',3)            
             hold on
             if ~eoflag

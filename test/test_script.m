@@ -33,18 +33,35 @@ setup.Fs                = 1000;
 setup.L                 = 4;
 setup.Foi               = 0:45;
 
-setup.NumberPeriods = 3;
+setup.NumberPeriods = 10;
 %% Artifact Removal
 close all
-filt_type = {'ave','linear','exp'};     
+filt_type = {'ave','linear','exp','gauss'}
 [t,e,z]                 = test.generate_signal(setup);
+
+for np = [1,3,5]
+    
+% figure
+% set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
+% for fidx = 1 : length(filt_type)
+%     subplot(4,1,fidx)
+%     k   = filter.kernel.causal(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
+%     plot(real(filter.kernel.run(sum(e,1),k)))
+%     set(gca,'xlim',[2000,4000])
+%     hold on
+%     plot(sum(e,1),'r')
+% end
+
+figure
+set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
 for fidx = 1 : length(filt_type)
-    figure
-    set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
-    k   = filter.kernel.create(setup.NumberPeriods./2,setup.tacsFreq,setup.Fs,filt_type{fidx});    
-    plot(real(filter.kernel.shapeless(sum(e,1),k)))
+    subplot(4,1,fidx)
+    k   = filter.kernel.symmetric(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
+    plot(real(filter.kernel.run(sum(e,1),k)))
+    set(gca,'xlim',[2000,4000])
     hold on
     plot(sum(e,1),'r')
+end
 end
 
 %%
@@ -54,13 +71,11 @@ F       = [];
 E       = [];
 Z       = [];
 for rep = 1 : rep_num
-    [t,e,z]                 = test.generate_signal(setup);
- 
-     filt_type = {'ave','linear','exp'};
+     [t,e,z]                 = test.generate_signal(setup); 
      filtered = t;     
      for fidx = 2 : length(filt_type)+1
-         k                   = (filter.kernel.create(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1}));       
-         filtered(fidx,:)    = (filter.kernel.shapeless(t,k));       
+         k                   = (filter.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1}));       
+         filtered(fidx,:)    = (filter.kernel.run(t,k));       
      end
     F                       = cat(3,F,filtered);
     E                       = cat(3,E,e);
