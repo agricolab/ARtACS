@@ -3,6 +3,8 @@
 % 'ave' : average
 % 'linear' : linear
 % 'exp' : exponential
+% 'gauss' : gaussian
+% 'cauchy' : cauchy 
 
 function kernel = causal(NumberPeriods,freq,Fs,wfun,tau)    
       
