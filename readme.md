@@ -1,6 +1,8 @@
-Repo contains source code for creating and filtering EEG data from periodic, non-sinusoidal and non-stationary tACS artifacts using causal and symmetric comb filters.
+Repo contains source code for creating and filtering EEG data from _periodic, non-sinusoidal_ and _non-stationary_ tCS artifacts using causal and symmetric comb filters.
 
 Includes source code for simulation of event-related potentials and oscillations and tACS artifacts.
+> wrong syntax
+
 
 ### Usage / Creation
 ```matlab
@@ -25,7 +27,9 @@ wfun            = 'ave';
 kernel          = filter.kernel.causal(NumberPeriods,tacsFreq,Fs,wfun);
 
 % create a symmetric kernel
-% note that symetric kernels require even integers; function will correct wrong type and uneven integers to closest match by rounding up
+% note that symetric kernels require even integers;
+% the function will correct wrong type and uneven integers
+% to closest match by rounding up
 
 kernel          = filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,wfun);
 
