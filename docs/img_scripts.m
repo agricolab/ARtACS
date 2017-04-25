@@ -173,18 +173,42 @@ for N = 1 : length(NumberPeriods)
     filter.kernel.response(filter.kernel.causal(NumberPeriods(N),tacsFreq,Fs,'exp'),Fs,2,30,gcf)    
    % set(get(gca,'children'),'Color',cmap{tau_idx});    
     print(gcf,[printfolder,'np/mag_exp_',num2str(NumberPeriods(N)),'.png'],'-dpng')
-    
-        
+           
 end
+%% Evaluate on Simulated Signals
+% Signal and Artifact Construction
+clear setup
+% event-related potential
+setup.erpMagnitude      = 0;
 
-   
+% noise level
+setup.NoiseLevel        = 0.2;
 
+% event-related impedance modulation -> tacs amplitude modulation
+% can also be understood as event-related power modulation
+setup.eoFreq            = 10;
+setup.eoFreq            = 15.6;
+setup.eoModulation      = 1;
+%setup.eoPhase           = 'random';
+setup.eoPhase           = 0;
 
-%%
+% tacs parameters
+setup.tacsFreq          = 10;
+setup.tacsMagnitude     = 20;
+setup.tacsSaturate      = Inf;
+%setup.tacsSaturate      = .5;
+%setup.tacsPhase         = 'random';
+setup.tacsPhase         = 0;
 
+% level of sinusoidal impedance fluctutations -> tacs amplitude modulation
+setup.tacsModulation    = [2,1]; %magnitude, natural frequency of fluctuations
 
+% signal recording parameters
+setup.Fs                = 1000;
+setup.L                 = 4;
+setup.Foi               = 0:45;
 
-
+setup.NumberPeriods = 10;
 
 
 

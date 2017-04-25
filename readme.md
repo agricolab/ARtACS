@@ -22,7 +22,8 @@ wfun            = 'ave';
 % 'gauss'   : gaussian
 
 % create a causal kernel
-% note that kernels creation requires integers; function will correct wrong type to closest integers by rounding up
+% note that kernels creation requires integers;
+% function will correct wrong type to closest integers by rounding up.
 
 kernel          = filter.kernel.causal(NumberPeriods,tacsFreq,Fs,wfun);
 
