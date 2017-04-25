@@ -244,7 +244,7 @@ We implemented functions for kernel creation and artifact removal in Matlab 2016
 
 \subsection{Evaluation of Frequency Response}\label{sec:EvaluationFreq}
 
-\subsubsection{Causal Kernels}
+\subsubsection{Exemplary Kernels}
 
 Examine the following exemplary kernels constructed for a sampling rate of 1KHz, a stimulation frequency of 10 Hz and a memory of 10~\figref{fig:ExemplaryCausalKernels}.
 
@@ -274,36 +274,6 @@ Examine the following exemplary kernels constructed for a sampling rate of 1KHz,
 
 As you can see from figure~\ref{fig:ExemplaryCausalKernels}, the (numerically calculated) magnitude responses of the four approaches are highly similar. Their key characteristic is the strong supression of the target frequency and its integer multiples.
 Yet, note the difference in passbands. We find strong ringing in the passband for the uniform~(\ref{fig:UniformKernel}) and linear kernel~(\ref{fig:LinearKernel}), especially compared to the smooth transitions of the exponential~(\ref{fig:ExponentialKernel}) or Gaussian kernel~(\ref{fig:GaussKernel}).
-
-\subsubsection{Symmetric Kernels}
-
-Examine the following exemplary kernels constructed with parameters identical to the causal kernels, but symmetric on the origin instead~\figref{fig:ExemplarySymKernels}. Please note that a uniform symmetric is a~\gls{sma}-Kernel~\eqref{eq:SMA}.
-
-\begin{figure}[hbtp]
-    \begin{subfigure}{.245\textwidth}
-        \includegraphics[width=\textwidth]{img/sym/kernel_ave.png}\\
-        \includegraphics[width=\textwidth]{img/sym/mag_ave.png}
-        \caption{Uniform}\label{fig:UniformSymKernel}
-    \end{subfigure}
-    \begin{subfigure}{.245\textwidth}
-        \includegraphics[width=\textwidth]{img/sym/kernel_linear.png}\\
-        \includegraphics[width=\textwidth]{img/sym/mag_linear.png}
-        \caption{Linear}\label{fig:LinearSymKernel}
-    \end{subfigure}
-    \begin{subfigure}{.245\textwidth}
-        \includegraphics[width=\textwidth]{img/sym/kernel_exp.png}\\
-        \includegraphics[width=\textwidth]{img/sym/mag_exp.png}
-        \caption{Exponential~$\tau=4$}\label{fig:ExponentialSymKernel}
-    \end{subfigure}
-    \begin{subfigure}{.245\textwidth}
-        \includegraphics[width=\textwidth]{img/sym/kernel_gauss.png}\\
-        \includegraphics[width=\textwidth]{img/sym/mag_gauss.png}
-        \caption{Gaussian~$\tau=3$}\label{fig:GaussSymKernel}
-    \end{subfigure}
-    \caption{Exemplary Symmetric Kernels}\label{fig:ExemplarySymKernels}
-\end{figure}
-
-As you can see from figure~\ref{fig:ExemplarySymKernels}, symmetric kernels share key characteristic with the causal kernels, especially the strong suppression. But we also find the presence of ringing for the the uniform~(\ref{fig:UniformSymKernel}) and linear kernel~(\ref{fig:LinearSymKernel}). Note that the passband range appears to be  less narrow for the symmetric compared to the causal filters. Yet the passband response for the Gaussian Kernel exhibits  superior flatness~(\ref{fig:GaussSymKernel}).
 
 \subsubsection{Exemplary Kernel Tuning}
 
@@ -350,7 +320,6 @@ Examine the following exponential kernels $N$~\figref{fig:ExemplaryNPTuning}.In 
     \end{subfigure}
     \caption{Exemplary $N$ Tuning with $\tau = 4$}\label{fig:ExemplaryNPTuning}
 \end{figure}
-
 
 
 \subsection{Evaluation on simulated signals}\label{sec:EvaluationSimulated}
