@@ -61,31 +61,51 @@ toi = 1751:2750;
 test.performance(F(:,toi,:),e(:,toi),100,10,0,2) 
 
 %% Artifact Removal
+% Signal and Artifact Construction
+clear setup
+% event-related potential
+setup.erpMagnitude      = 0;
+
+% noise level
+setup.NoiseLevel        = 0;
+setup.eoFreq            = 10;
+setup.eoModulation      = 1;
+setup.eoPhase           = 0;
+
+% tacs parameters
+setup.tacsFreq          = 10;
+setup.tacsMagnitude     = 20;
+setup.tacsSaturate      = Inf;
+setup.tacsPhase         = 'random';
+setup.tacsModulation    = [1,.5]; %variability, stiffness
+
+% signal recording parameters
+setup.Fs                = 1000;
+setup.L                 = 4;
+setup.Foi               = 0:45;
+setup.NumberPeriods     = 3;
+
+close all
+[t,e]               = test.generate_signal(setup);
+plot(t), hold on, plot(abs(hilbert(t)),'r')
+%%
 close all
 filt_type           = {'ave','linear','exp','gauss'};
-[t,e]               = test.generate_signal(setup);
+filt_title           = {'Uniform','Linear','Exponential','Gaussian'};
+
 
 for np = [1,3,5]
-    
-% figure
-% set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
-% for fidx = 1 : length(filt_type)
-%     subplot(4,1,fidx)
-%     k   = filter.kernel.causal(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
-%     plot(real(filter.kernel.run(sum(e,1),k)))
-%     set(gca,'xlim',[2000,4000])
-%     hold on
-%     plot(sum(e,1),'r')
-% end
-
 figure
-set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
+set(gcf,'Position',[100 100 600 500],'paperpositionmode','auto')
 for fidx = 1 : length(filt_type)
     subplot(4,1,fidx)
     k   = filter.kernel.symmetric(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
     plot(real(filter.kernel.run(sum(e,1),k)))
-    set(gca,'xlim',[2000,4000])
+    set(gca,'xlim',[1750,2750])
     hold on
     plot(sum(e,1),'r')
+    title(filt_title{fidx})    
 end
+h = legend('Filtered','Raw');
+set(h,'position',[0.1 .85 .08 .08])
 end

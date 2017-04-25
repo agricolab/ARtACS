@@ -178,6 +178,184 @@ end
 %% Evaluate on Simulated Signals
 % Signal and Artifact Construction
 clear setup
+setup.NoiseLevel        = 0.2;
+
+setup.erpMagnitude      = 2;
+setup.eoFreq            = 10;
+setup.eoModulation      = 1;
+%setup.eoPhase           = 'random';
+setup.eoPhase           = 0;
+
+% tacs parameters
+setup.tacsFreq          = 10;
+setup.tacsMagnitude     = 20;
+setup.tacsSaturate      = Inf;
+%setup.tacsSaturate      = .5;
+%setup.tacsPhase         = 'random';
+setup.tacsPhase         = 0;
+
+% level of impedance fluctutations -> tacs amplitude modulation
+setup.tacsModulation    = [1,.5]; %variability, stiffness
+% signal recording parameters
+setup.Fs                = 1000;
+setup.L                 = 4;
+setup.Foi               = 0:45;
+%filter parameters
+setup.NumberPeriods     = 10;
+
+rep_num = 200; % we generate 200 trials
+F       = [];
+E       = [];
+Z       = [];
+for rep = 1 : rep_num    
+     [t,e]                 = test.generate_signal(setup); 
+     filtered = t;     
+     for fidx = 2 : length(filt_type)+1
+        k                                       = filter.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+        filtered(fidx,:)                        = filter.kernel.run(t,k);     
+        k                                       = filter.kernel.symmetric(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+        filtered(fidx+length(filt_type),:)      = filter.kernel.run(t,k);       
+     end
+    F                       = cat(3,F,filtered);
+    E                       = cat(3,E,e);
+end
+%and estimate how good we recover the ERP based on bootstrap
+clc
+close all
+
+if setup.erpMagnitude  ~= 0
+    hdl = figure;
+    toi = (((setup.L/2)-1).*setup.Fs)+(751:1750);
+    test.performance(F(1:5,toi,:),e(1,toi),500,10,0,hdl)
+    test.performance(F([1,6:end],toi,:),e(1,toi),500,10,0,hdl)
+    annotation('textbox','string','ERP','position',[0 0 0 1])
+end
+
+if setup.eoModulation  ~= 0
+    hdl = figure;
+    toi = (((setup.L/2)-1).*setup.Fs)+(751:1750);
+    test.performance(F(1:5,toi,:),e(2,toi),500,10,1,hdl) 
+    test.performance(F([1,6:end],toi,:),e(2,toi),500,10,1,hdl) 
+    annotation('textbox','string','Oscillation','position',[0 0 0 1])   
+end
+
+%%
+KX_erp  = [];
+KX_eo   = [];
+cnt = 0;
+%for np = [2,4,8,16,32,64]
+for np = [2,4,6,8,10,12,14,16]
+    setup.NumberPeriods     = np;
+    cnt = cnt+1;
+    rep_num = 200; % we generate 200 trials
+    F       = [];
+    E       = [];
+    Z       = [];
+    for rep = 1 : rep_num    
+         [t,e]                 = test.generate_signal(setup); 
+         filtered = t;     
+         for fidx = 2 : length(filt_type)+1
+            k                                       = filter.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+            filtered(fidx,:)                        = filter.kernel.run(t,k);     
+            k                                       = filter.kernel.symmetric(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+            filtered(fidx+length(filt_type),:)      = filter.kernel.run(t,k);       
+         end
+        F                       = cat(3,F,filtered);
+        E                       = cat(3,E,e);
+    end
+    clc
+    close all
+    
+    if setup.erpMagnitude  ~= 0
+        hdl = figure;
+        toi = (((setup.L/2)-1).*setup.Fs)+(751:1750);
+        kx1 = test.performance(F(1:5,toi,:),e(1,toi),500,10,0,hdl);
+        kx2 = test.performance(F([1,6:end],toi,:),e(1,toi),500,10,0,hdl);
+        annotation('textbox','string','ERP','position',[0 0 0 1])
+    end
+    KX_erp(:,:,cnt) = cat(1,kx1,kx2);
+    
+    if setup.eoModulation  ~= 0
+        hdl = figure;
+        toi = (((setup.L/2)-1).*setup.Fs)+(751:1750);
+        kx1 = test.performance(F(1:5,toi,:),e(2,toi),500,10,1,hdl);
+        kx2 = test.performance(F([1,6:end],toi,:),e(2,toi),500,10,1,hdl);
+        annotation('textbox','string','Oscillation','position',[0 0 0 1])   
+    end
+    KX_eo(:,:,cnt) = cat(1,kx1,kx2);
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%
+figure
+set(gcf,'Position',[100 100 600 800],'paperpositionmode','auto')
+    filter_num  = size(F,1);    
+    trl_num     = size(F,3);    
+    pick_num    = min(10);
+    rep_num     = 500
+    taxis       = 1:length(t);      
+    titletext = {'Raw','Average','Linear','Exponential','Gaussian'};
+    %spot        = reshape(1:(2*5),2,5)';
+    spot        = reshape(1:(1*5),1,5)';
+    pick    = datasample(1:trl_num,pick_num);  
+    for fidx = 1 : filter_num
+        subplot(5,1,spot(fidx,1))
+        plot(sum(e,1),'color',[.8 .8 .8],'linewidth',3)            
+        hold on     
+        my  = mean(abs(hilbert(F(fidx,:,pick))),3);
+        my  = my-min(my);    
+        plot(taxis,my)
+        grid on       
+        title(titletext{fidx})
+        ylim = ceil(max(abs(my)));
+        set(gca,'ylim',[-ylim ylim])
+        xlabel('Time')
+        ylabel('Amplitude')
+
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%% Evaluate on Simulated Signals
+% Signal and Artifact Construction
+clear setup
 % event-related potential
 setup.erpMagnitude      = 1;
 
@@ -201,7 +379,7 @@ setup.tacsPhase         = 'random';
 %setup.tacsPhase         = 0;
 
 % level of impedance fluctutations -> tacs amplitude modulation
-setup.tacsModulation    = [1,.9]; %variability, stiffness
+setup.tacsModulation    = [1,.5]; %variability, stiffness
 
 % signal recording parameters
 setup.Fs                = 1000;
