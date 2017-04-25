@@ -37,7 +37,6 @@ setup.Foi               = 0:45;
 setup.NumberPeriods     = 40;
 %%
 
-
 rep_num = 200; % we generate 200 trials
 F       = [];
 E       = [];
@@ -46,8 +45,8 @@ for rep = 1 : rep_num
      [t,e]                 = test.generate_signal(setup); 
      filtered = t;     
      for fidx = 2 : length(filt_type)+1
-         k                   = filter.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
-         filtered(fidx,:)    = filter.kernel.run(t,k);       
+         k                   = artacs.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+         filtered(fidx,:)    = artacs.kernel.run(t,k);       
      end
     F                       = cat(3,F,filtered);
     E                       = cat(3,E,e);
@@ -99,8 +98,8 @@ figure
 set(gcf,'Position',[100 100 600 500],'paperpositionmode','auto')
 for fidx = 1 : length(filt_type)
     subplot(4,1,fidx)
-    k   = filter.kernel.symmetric(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
-    plot(real(filter.kernel.run(sum(e,1),k)))
+    k   = artacs.kernel.symmetric(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
+    plot(real(artacs.kernel.run(sum(e,1),k)))
     set(gca,'xlim',[1750,2750])
     hold on
     plot(sum(e,1),'r')

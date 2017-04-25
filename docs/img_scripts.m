@@ -55,80 +55,80 @@ NumberPeriods   = 10;
 tacsFreq        = 10;
 Fs              = 1000;
 
-filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'ave'),Fs,1)
+artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'ave'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'causal/kernel_ave.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'linear'),Fs,1)
+artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'linear'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'causal/kernel_linear.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'exp'),Fs,1)
+artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'exp'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'causal/kernel_exp.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,1)
+artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'causal/kernel_gauss.png'],'-dpng')
 % --------------------
 
-filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'ave'),Fs,2,30)
+artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'ave'),Fs,2,30)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'causal/mag_ave.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'linear'),Fs,2,30)
+artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'linear'),Fs,2,30)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'causal/mag_linear.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'exp'),Fs,2,30)
+artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'exp'),Fs,2,30)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'causal/mag_exp.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,2,30)
+artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,2,30)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'causal/mag_gauss.png'],'-dpng')
 
 %%
 
-filter.kernel.response(filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'ave'),Fs,1)
+artacs.kernel.response(artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'ave'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'sym/kernel_ave.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'linear'),Fs,1)
+artacs.kernel.response(artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'linear'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'sym/kernel_linear.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'exp'),Fs,1)
+artacs.kernel.response(artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'exp'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'sym/kernel_exp.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,1)
+artacs.kernel.response(artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,1)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 set(gca,'ylim',[-.75 1.1])
 print(gcf,[printfolder,'sym/kernel_gauss.png'],'-dpng')
 
 % --------------------
 
-filter.kernel.response(filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'ave'),Fs,2,30)
+artacs.kernel.response(artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'ave'),Fs,2,30)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'sym/mag_ave.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'linear'),Fs,2,30)
+artacs.kernel.response(artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'linear'),Fs,2,30)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'sym/mag_linear.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'exp'),Fs,2,30)
+artacs.kernel.response(artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'exp'),Fs,2,30)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'sym/mag_exp.png'],'-dpng')
 
-filter.kernel.response(filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,2,30)
+artacs.kernel.response(artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,'gauss'),Fs,2,30)
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
 print(gcf,[printfolder,'sym/mag_gauss.png'],'-dpng')
 
@@ -141,7 +141,7 @@ for tau_idx = 1 : length(tau)
     figure
     hold on
     set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
-    filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'exp',tau(tau_idx)),Fs,1,[],gcf)    
+    artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'exp',tau(tau_idx)),Fs,1,[],gcf)    
     set(gca,'ylim',[-1.1 1.1])
     %set(get(gca,'children'),'Markerfacecolor',cmap{tau_idx});    
     print(gcf,[printfolder,'tau/kernel_exp_',num2str(tau(tau_idx)),'.png'],'-dpng')
@@ -149,7 +149,7 @@ for tau_idx = 1 : length(tau)
     figure
     hold on
     set(gcf,'Position',[100 500 400 300],'paperpositionmode','auto')
-    filter.kernel.response(filter.kernel.causal(NumberPeriods,tacsFreq,Fs,'exp',tau(tau_idx)),Fs,2,30,gcf)    
+    artacs.kernel.response(artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,'exp',tau(tau_idx)),Fs,2,30,gcf)    
    % set(get(gca,'children'),'Color',cmap{tau_idx});    
     print(gcf,[printfolder,'tau/mag_exp_',num2str(tau(tau_idx)),'.png'],'-dpng')
 end
@@ -162,7 +162,7 @@ for N = 1 : length(NumberPeriods)
     figure
     hold on
     set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
-    filter.kernel.response(filter.kernel.causal(NumberPeriods(N),tacsFreq,Fs,'exp'),Fs,1,[],gcf)    
+    artacs.kernel.response(artacs.kernel.causal(NumberPeriods(N),tacsFreq,Fs,'exp'),Fs,1,[],gcf)    
     set(gca,'ylim',[-1.1 1.1])
     %set(get(gca,'children'),'Markerfacecolor',cmap{tau_idx});    
     print(gcf,[printfolder,'np/kernel_exp_',num2str(NumberPeriods(N)),'.png'],'-dpng')
@@ -170,7 +170,7 @@ for N = 1 : length(NumberPeriods)
     figure
     hold on
     set(gcf,'Position',[100 500 400 300],'paperpositionmode','auto')
-    filter.kernel.response(filter.kernel.causal(NumberPeriods(N),tacsFreq,Fs,'exp'),Fs,2,30,gcf)    
+    artacs.kernel.response(artacs.kernel.causal(NumberPeriods(N),tacsFreq,Fs,'exp'),Fs,2,30,gcf)    
    % set(get(gca,'children'),'Color',cmap{tau_idx});    
     print(gcf,[printfolder,'np/mag_exp_',num2str(NumberPeriods(N)),'.png'],'-dpng')
            
@@ -203,6 +203,8 @@ setup.Foi               = 0:45;
 %filter parameters
 setup.NumberPeriods     = 10;
 
+
+filt_type = {'ave','linear','exp','gauss'};
 rep_num = 200; % we generate 200 trials
 F       = [];
 E       = [];
@@ -211,10 +213,10 @@ for rep = 1 : rep_num
      [t,e]                 = test.generate_signal(setup); 
      filtered = t;     
      for fidx = 2 : length(filt_type)+1
-        k                                       = filter.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
-        filtered(fidx,:)                        = filter.kernel.run(t,k);     
-        k                                       = filter.kernel.symmetric(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
-        filtered(fidx+length(filt_type),:)      = filter.kernel.run(t,k);       
+        k                                       = artacs.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+        filtered(fidx,:)                        = artacs.kernel.run(t,k);     
+        k                                       = artacs.kernel.symmetric(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+        filtered(fidx+length(filt_type),:)      = artacs.kernel.run(t,k);       
      end
     F                       = cat(3,F,filtered);
     E                       = cat(3,E,e);
@@ -255,10 +257,10 @@ for np = [2,4,6,8,10,12,14,16]
          [t,e]                 = test.generate_signal(setup); 
          filtered = t;     
          for fidx = 2 : length(filt_type)+1
-            k                                       = filter.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
-            filtered(fidx,:)                        = filter.kernel.run(t,k);     
-            k                                       = filter.kernel.symmetric(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
-            filtered(fidx+length(filt_type),:)      = filter.kernel.run(t,k);       
+            k                                       = artacs.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+            filtered(fidx,:)                        = artacs.kernel.run(t,k);     
+            k                                       = artacs.kernel.symmetric(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+            filtered(fidx+length(filt_type),:)      = artacs.kernel.run(t,k);       
          end
         F                       = cat(3,F,filtered);
         E                       = cat(3,E,e);
@@ -398,8 +400,8 @@ for rep = 1 : rep_num
      [t,e]                 = test.generate_signal(setup); 
      filtered = t;     
      for fidx = 2 : length(filt_type)+1
-         k                   = filter.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
-         filtered(fidx,:)    = filter.kernel.run(t,k);       
+         k                   = artacs.kernel.causal(setup.NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx-1});       
+         filtered(fidx,:)    = artacs.kernel.run(t,k);       
      end
     F                       = cat(3,F,filtered);
     E                       = cat(3,E,e);
@@ -425,8 +427,8 @@ for np = [1,3,5]
 % set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
 % for fidx = 1 : length(filt_type)
 %     subplot(4,1,fidx)
-%     k   = filter.kernel.causal(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
-%     plot(real(filter.kernel.run(sum(e,1),k)))
+%     k   = artacs.kernel.causal(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
+%     plot(real(artacs.kernel.run(sum(e,1),k)))
 %     set(gca,'xlim',[2000,4000])
 %     hold on
 %     plot(sum(e,1),'r')
@@ -436,8 +438,8 @@ figure
 set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
 for fidx = 1 : length(filt_type)
     subplot(4,1,fidx)
-    k   = filter.kernel.symmetric(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
-    plot(real(filter.kernel.run(sum(e,1),k)))
+    k   = artacs.kernel.symmetric(np,setup.tacsFreq,setup.Fs,filt_type{fidx});    
+    plot(real(artacs.kernel.run(sum(e,1),k)))
     set(gca,'xlim',[2000,4000])
     hold on
     plot(sum(e,1),'r')

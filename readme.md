@@ -25,24 +25,24 @@ wfun            = 'ave';
 % note that kernels creation requires integers;
 % function will correct wrong type to closest integers by rounding up.
 
-kernel          = filter.kernel.causal(NumberPeriods,tacsFreq,Fs,wfun);
+kernel          = artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,wfun);
 
 % create a symmetric kernel
 % note that symetric kernels require even integers;
 % the function will correct wrong type and uneven integers
 % to closest match by rounding up
 
-kernel          = filter.kernel.symmetric(NumberPeriods,tacsFreq,Fs,wfun);
+kernel          = artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,wfun);
 
 
 % plot the kernel with
-filter.kernel.response(kernel,Fs,1)
+artacs.kernel.response(kernel,Fs,1)
 
 % assess the magnitude response with
 foi = 1:30;         %frequencies of interest
 foi = [1,30];       %frequency of interest band boundaries
 foi = 30;           %upper frequency of interest
-filter.kernel.response(kernel,Fs,2,foi)
+artacs.kernel.response(kernel,Fs,2,foi)
 
 ```
 #### Causal
@@ -85,7 +85,7 @@ filter.kernel.response(kernel,Fs,2,foi)
 % perform filtering
 % function pads signal with zeros to improve filter performance
 % signal should be a vector
-% kernel should be constructed by filter.kernel.causal or filter.kernel.symmetric
-filter.kernel.run(signal,kernel)
+% kernel should be constructed by artacs.kernel.causal or artacs.kernel.symmetric
+artacs.kernel.run(signal,kernel)
 
 ```

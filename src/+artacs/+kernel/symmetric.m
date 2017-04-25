@@ -5,16 +5,16 @@ function kernel = symmetric(NumberPeriods,freq,Fs,wfun,tau)
     
     if nargin > 3
         if nargin > 4
-            kernel = filter.kernel.causal(NumberPeriods,freq,Fs,wfun,tau);
+            kernel = artacs.kernel.causal(NumberPeriods,freq,Fs,wfun,tau);
         else
-            kernel = filter.kernel.causal(NumberPeriods,freq,Fs,wfun);
+            kernel = artacs.kernel.causal(NumberPeriods,freq,Fs,wfun);
         end
     else
-        kernel = filter.kernel.causal(NumberPeriods,freq,Fs);
+        kernel = artacs.kernel.causal(NumberPeriods,freq,Fs);
     end
     kernel = (kernel+fliplr(kernel))./2;
     
-    while length(kernel) < L,
+    while length(kernel) < L
         kernel = [0,kernel,0];
     end
 end
