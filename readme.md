@@ -71,7 +71,7 @@ artacs.kernel.response(kernel,Fs,2,foi)
 <th><img src="docs\img\sym\kernel_gauss.png" width = "400"></th>
 </tr>
 <tr>
-<th><center>Uniform / Average</center></th>
+<th><center>Uniform / SMA</center></th>
 <th><center>Linear</center></th>
 <th><center>Exponential</center></th>
 <th><center>Gaussian</center></th>
