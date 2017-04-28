@@ -16,10 +16,6 @@ function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau)
     % check whether kernel frequency is possible for the given sampling rate
     if period ~= int32(period)    
         error('KERN:FREQ','Stimulation Frequency not an integer divisor of Sampling Frequency!')
-%         allowedfreqs    = Fs./[1:Fs];
-%         allowedfreqs(allowedfreqs~=int32(allowedfreqs)) = [];    
-%         [~,idx]         = sort(abs(freq-allowedfreqs));
-%         nu_freq         = allowedfreqs(idx(1));    
     end    
            
     % generate weighting function

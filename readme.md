@@ -1,91 +1,87 @@
 Repo contains source code for creating and filtering EEG data from _periodic, non-sinusoidal_ and _non-stationary_ tCS artifacts using causal and symmetric comb filters.
 
-Includes source code for simulation of event-related potentials and oscillations and tACS artifacts.
-> wrong syntax
+Includes source code for simulation of event-related potentials and oscillations and tACS artifacts with or without saturation.
 
-
-### Usage / Creation
+### Use Case
+###### Non-Sinusoidal Filter
 ```matlab
-% add package to path
-addpath('.\..\src')
+% Add package to path
+addpath('.\src\')
 
-% Define kernel parameters
-
-NumberPeriods   = 10; %should be Integer
-tacsFreq        = 10; %Hz
+% Define a Gauss-kernel
+% over the last 10 periods
+% filtering at a frequency of 10 Hz
+% for a signal recorded at 1000 Hz
+NumberPeriods   = 10;
+freq            = 10; %Hz
 Fs              = 1000;
-wfun            = 'ave';
+wfun            = 'gauss';
 % wfun can be
 % 'ave'     : average
 % 'linear'  : linear
 % 'exp'     : exponential
 % 'gauss'   : gaussian
 
-% create a causal kernel
-% note that kernels creation requires integers;
-% function will correct wrong type to closest integers by rounding up.
+% Create a causal  or a symmetric kernel
+kernel          = artacs.kernel.causal(NumberPeriods,freq,Fs,wfun);
+kernel          = artacs.kernel.symmetric(NumberPeriods,freq,Fs,wfun);
+% Note:
+% Any kernel requires a Fs which is an integer multiple of its filter frequency.
+% Symmetric kernels require even integers
 
-kernel          = artacs.kernel.causal(NumberPeriods,tacsFreq,Fs,wfun);
+% Define the Sampling Rate of your Recording:
+Fs              = 1000;
+% Note: If necessary, the signal will be up/down sampled to be in agreement with the kernel.
 
-% create a symmetric kernel
-% note that symetric kernels require even integers;
-% the function will correct wrong type and uneven integers
-% to closest match by rounding up
-
-kernel          = artacs.kernel.symmetric(NumberPeriods,tacsFreq,Fs,wfun);
-
-
-% plot the kernel with
-artacs.kernel.response(kernel,Fs,1)
-
-% assess the magnitude response with
-foi = 1:30;         %frequencies of interest
-foi = [1,30];       %frequency of interest band boundaries
-foi = 30;           %upper frequency of interest
-artacs.kernel.response(kernel,Fs,2,foi)
-
+% Run the kernel filter
+filtered_signal = artacs.kernel.run(signal,kernel,Fs)
 ```
-#### Causal
-<table>
-<tr>
-<th><img src="docs\img\causal\kernel_ave.png" width = "400"></th>
-<th><img src="docs\img\causal\kernel_linear.png" width = "400"></th>
-<th><img src="docs\img\causal\kernel_exp.png" width = "400"></th>
-<th><img src="docs\img\causal\kernel_gauss.png" width = "400"></th>
-</tr>
-<tr>
-<th><center>Uniform / Average</center></th>
-<th><center>Linear</center></th>
-<th><center>Exponential</center></th>
-<th><center>Gaussian</center></th>
-</tr>
-</table>
+###### More information:
 
-#### Symmetric
+[Inspect different kernels in time and frequency domain](response.md)
 
-<table>
-<tr>
-<th><img src="docs\img\sym\kernel_ave.png" width = "400"></th>
-<th><img src="docs\img\sym\kernel_linear.png" width = "400"></th>
-<th><img src="docs\img\sym\kernel_exp.png" width = "400"></th>
-<th><img src="docs\img\sym\kernel_gauss.png" width = "400"></th>
-</tr>
-<tr>
-<th><center>Uniform / SMA</center></th>
-<th><center>Linear</center></th>
-<th><center>Exponential</center></th>
-<th><center>Gaussian</center></th>
-</tr>
-</table>
+###### Task List
+- [x] Create filter code
+- [x] Comb Filter when Kernel and Signal Fs are not matched
+- [x] Implement static code tests
+- [ ] Allow filtering for non-integer divisible frequencies
+- [ ] Translate all code to Python3
 
-### Usage / Filtering
+
+- [x] Write up rationale for weighted filters
+- [x] Create signal simulation code
+- [x] Evaluate on simulated signal
+- [ ] Write up results of evaluation on simulated signals
+- [ ] Evaluate on real data
+- [ ] Write up results of evaluation on real data
+---
+
+###### Sinusoidal Filter
+I also implemented two DFT filter approaches. Both do not require a predefined kernel. They  also works directly for filter frequencies which are non-integer divisibles of Fs. But being based on DFT/FFT, they are supposed to "work" only on sinusoidal data.
+
 ```matlab
-
-
-% perform filtering
-% function pads signal with zeros to improve filter performance
-% signal should be a vector
-% kernel should be constructed by artacs.kernel.causal or artacs.kernel.symmetric
-artacs.kernel.run(signal,kernel)
-
+% based on adaptive local dft
+filtered_signal = artacs.dft.local(signal,freq,Fs,NumberPeriods)
+% based on fft/ifft using the complete trial duration
+filtered_signal = artacs.dft.complete(signal,freq,Fs)
 ```
+###### Signal Simulation
+I also implemented the possibility to generate simulated signals for evaluation of the filters on realistic data.
+```matlab
+% you can create a random configuration
+[signal,echt]  = generate.recording('random')
+
+% or a generic one
+[signal,echt]  = generate.recording('generic')
+
+% or define your own setup parameters
+[signal,echt]  = generate.recording(setup)
+```
+###### More information on how you can setup the simulated signal
+
+[Creating simulated signals](generate.md)
+
+|<img src="docs\img\div\three_approaches.png" width = "1000"></th>|
+|:----:|
+| _Exemplary results for filtering a generic signal_|
+---

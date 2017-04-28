@@ -28,7 +28,7 @@ function [signal,echt,truetacs] = recording(setup)
     
     % create tacs       
     tacs            = generate.tacs(setup);
-    true_tacs       = tacs;
+    truetacs        = setup.tacsMagnitude*tacs;
     
     % perform distortion
     tacs            = tacs+generate.distortion(setup);
