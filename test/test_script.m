@@ -1,6 +1,8 @@
 matlabrc 
 cd('C:\Users\Robert Bauer\OneDrive\Work\publish\wip\ARtACS\test\')
 addpath('.\..\src')
+%%
+test.static('src\+artacs')
 %% Evaluate on Simulated Signals
 % Signal and Artifact Construction
 clear setup
