@@ -1,4 +1,19 @@
-function [t,e] = recording(setup)    
+function [signal,echt,truetacs] = recording(setup)    
+    
+    if nargin < 1
+        setup = generate.generic();
+    end
+    if ~isstruct(setup)
+        if strcmpi(setup,'generic')
+        	setup = generate.generic();
+        elseif strcmpi(setup,'random')
+            setup = generate.random();
+        else
+            error('SIG:setup','Setup is not recognized');
+        end
+    end
+
+
     % event-related potential 
     erp             = generate.erp(setup);
    
@@ -13,17 +28,24 @@ function [t,e] = recording(setup)
     
     % create tacs       
     tacs            = generate.tacs(setup);
+    true_tacs       = tacs;
     
+    % perform distortion
+    tacs            = tacs+generate.distortion(setup);
+
     % perform modulation
     tacs            = sm.*tacs;
     
     % superposition    
     noise           = generate.brown(setup);
-    e               = cat(1,erp,eo);    
-    x               = tacs+noise+sum(e);    
+    echt            = cat(1,erp,eo);    
+    x               = tacs+noise+sum(echt);    
     
+    % perform saturation
     if (setup.tacsSaturate*setup.tacsMagnitude) < (setup.tacsMagnitude-setup.tacsModulation(1)), warning('SIG:saturate','Saturation level will mask amplitude modulation'); end
-    t               = generate.saturation(x,setup);
+    signal          = generate.saturation(x,setup);
+    
+ 
 end
 
 
