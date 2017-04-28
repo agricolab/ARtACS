@@ -1,4 +1,4 @@
-% function kernel = create(NumberPeriods,freq,Fs,wfun)    
+% function Kernel = create(NumberPeriods,freq,Fs,wfun)    
 % wfun can be 
 % 'ave' : average
 % 'linear' : linear
@@ -6,8 +6,9 @@
 % 'gauss' : gaussian
 % 'cauchy' : cauchy 
 
-function kernel = causal(NumberPeriods,freq,Fs,wfun,tau)    
+function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau)    
       
+    
     % prepare variables    
     NumberPeriods   = ceil(NumberPeriods)+1;
     period          = Fs/freq;     
@@ -28,6 +29,7 @@ function kernel = causal(NumberPeriods,freq,Fs,wfun,tau)
     end
     
     if strcmpi(wfun,'linear')
+        tau                     = NaN;
         k                       = @(N)(N*(N+1))/2;        
         w                       = @(n,N)(N-n+1)./k(N);            
     elseif strcmpi(wfun,'exp')        
@@ -43,9 +45,11 @@ function kernel = causal(NumberPeriods,freq,Fs,wfun,tau)
         f                       = @(n,N)(1/pi)*(tau./((tau^2)-((N-n)./N)));
         w                       = @(n,N)f(n,N)./sum(f(1:N,N));
     elseif strcmpi(wfun,'ave')        
+        tau                     = NaN;
         w                       = @(n,N)repmat(1/N,1,max(n));
     else
        warning('KERN:WFUN','Weighting function unknown. Using average');
+       tau                      = NaN;
        w                        = @(n,N)repmat(1/N,1,max(n));
     end    
     
@@ -60,4 +64,10 @@ function kernel = causal(NumberPeriods,freq,Fs,wfun,tau)
         
     kernel  = [z,1,fliplr(kernel)];
 
+    Kernel.h                = kernel;
+    Kernel.Fs               = Fs;
+    Kernel.NumberPeriods    = NumberPeriods;
+    Kernel.Frequency        = freq;
+    Kernel.Weighting        = wfun;
+    Kernel.tau              = tau;
 end

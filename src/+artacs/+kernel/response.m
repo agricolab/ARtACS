@@ -1,20 +1,20 @@
 %function response(h,Fs) 
-function response(h,Fs,plot_flag,foi,fig_hdl)   
-    if nargin < 4, foi = 100; end
-    if nargin < 3, plot_flag = 1; end
+function response(Kernel,plot_flag,foi,fig_hdl)   
+    if nargin < 3, foi = 100; end
+    if nargin < 2, plot_flag = 1; end
     
     if length(foi) == 1
-        [H,w]   = freqz(h,1,0:.01:foi,Fs);
+        [H,w]   = freqz(Kernel.h,1,0:.01:foi,Kernel.Fs);
     elseif length(foi) == 2
-        [H,w]   = freqz(h,1,linspace(foi(1),foi(2),100),Fs);
+        [H,w]   = freqz(Kernel.h,1,linspace(foi(1),foi(2),100),Kernel.Fs);
     else
-        [H,w]   = freqz(h,1,foi,Fs);
+        [H,w]   = freqz(Kernel.h,1,foi,Kernel.Fs);
     end
     
-    N       = length(h);           
+    N       = length(Kernel.h);           
 
     % plot 
-    if nargin < 5
+    if nargin < 4
         figure
         set(gcf,'Position',[100 100 800 800],'paperpositionmode','auto')    
     else
@@ -22,7 +22,7 @@ function response(h,Fs,plot_flag,foi,fig_hdl)
     end
     
     if plot_flag == 1        
-        plotKernel(h,N)
+        plotKernel(Kernel.h,N)
     end
             
     if plot_flag == 2        
