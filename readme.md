@@ -7,7 +7,7 @@ Includes source code for simulation of event-related potentials and oscillations
 |:----:|:----:|
 | _Exemplary generic signal_| _Exemplary filtering of a generic signal_|
 ###### Comb Filter
-Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Currently only works for frequencies which are integer divisibles of the sampling rate.
+Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Comb filters natively supports frequencies which are integer divisibles of the sampling frequency. Filter other frequenices with artacs.kernel.run, which automatically  resamples the signal before and after filtering.
 ```matlab
 % Add package to path
 addpath('.\src\')
@@ -60,14 +60,14 @@ Generates simulated signals for filter evaluation.
 - [x] Create filter code
 - [x] Comb Filter when Kernel and Signal Fs are not matched
 - [x] Implement static code tests
-- [ ] Allow filtering for non-integer divisible frequencies
-- [ ] Translate all code to Python3
+- [x] Allow filtering for non-integer divisible frequencies
+- [ ] Translate the code to Python3
 
 
 - [x] Write up rationale for weighted filters
 - [x] Create signal simulation code
 - [x] Evaluate on simulated signal
-- [ ] Write up results of evaluation on simulated signals
+- [x] Write up results of evaluation on simulated signals
 - [ ] Evaluate on real data
 - [ ] Write up results of evaluation on real data
 ---

@@ -15,8 +15,10 @@ setup.tacsSaturate      = Inf;
 setup.tacsDistort       = 0.2;
 setup.tacsPhase         = 'random';
 
-% level of impedance fluctutations -> tacs amplitude modulation
+% level of random fluctuation of the artifcat amplitude.
+% implemented as a Ornstein–Uhlenbeck, i.e. AR (1), process
 setup.tacsModulation    = [1,.5]; %variability, stiffness
+
 % signal recording parameters
 setup.Fs                = 1000;
 setup.L                 = 4;
