@@ -1,26 +1,11 @@
-% function filt_sig = run(signal,kernel)
-function filt_sig = run(signal,kernel,Fs)
+% function run(signal,freq,NumberPeriods,Fs,wfun,symflag,tau)   
+function filt_sig = run(signal,freq,NumberPeriods,Fs,wfun,symflag,tau)   
 
-    if nargin < 3, Fs = kernel.Fs; end    
-    % Resample  to bring kernel and signal in alignment
-    if (Fs ~= kernel.Fs), signal = resample(signal,Fs,kernel.Fs); end
-    
-    [signal,pick]       = addpad(signal,kernel.h);
-    filt_sig            = (conv(signal(:)',kernel.h,'same'));    
-    filt_sig            = rempad(filt_sig,pick);
-    
-    % Resample to recover original signal Fs 
-    if (Fs ~= kernel.Fs), filt_sig = resample(filt_sig,kernel.Fs,Fs); end
-    
-end
+    if nargin < 7
+        kernel      = artacs.kernel.create(NumberPeriods,freq,Fs,wfun,symflag);
+    else
+        kernel      = artacs.kernel.create(NumberPeriods,freq,Fs,wfun,symflag,tau);
+    end
+    filt_sig    = artacs.kernel.runpredefined(signal,kernel,Fs);
 
-function [sig,pick] = addpad(sig,h)
-    sig     = sig(:)';    
-    L       = length(h)*4;    
-    sig     = padarray(sig,[0,L],'circular');
-    pick    = L+1:length(sig)-L;
-end
-
-function sig = rempad(sig,pick)
-    sig     = sig(pick);
 end
