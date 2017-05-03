@@ -1,8 +1,6 @@
 lit/
-test/data
-src/scrap
+dev/
 src/+utils
-dev
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
