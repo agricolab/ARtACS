@@ -217,15 +217,13 @@ set(lh,'position',[0.1 .8 .08 .08])
 print(gcf,[printfolder,'eva\three_approaches.png'],'-dpng')
 
 
-
-
-
 %% Suppress EO, recover ERP
 
 filt_axis       = {'Raw','Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','Adaptive DFT','Efferent Copy'};
 filt_type       = {'ave','linear','exp','gauss','ave','linear','exp','gauss'};
 sym_type        = {'causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric'};
 NumberPeriods   = 10;
+setup.tacsFreq  = 12;
 toi             = 1951:2050;
 setup           = generate.generic();
 rep_num         = 500;
@@ -236,8 +234,9 @@ for rep = 1 :  rep_num
     R(1,rep)        = recover;
 
     for fidx = 1 : length(filt_type)
-        kernel          = artacs.kernel.create(NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx},sym_type{fidx});
-        f               = artacs.kernel.runpredefined(r,kernel);        
+        %kernel          = artacs.kernel.create(NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx},sym_type{fidx});
+        %f               = artacs.kernel.runpredefined(r,kernel);        
+        f               = artacs.kernel.run(r,NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx},sym_type{fidx});        
         recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
         R(fidx+1,rep)   = recover;        
     end
@@ -246,10 +245,6 @@ for rep = 1 :  rep_num
     recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
     R(fidx+2,rep)   = recover;
 
-    
-    %a               = sin(setup.tacsFreq*2*pi*[1/setup.Fs:1/setup.Fs:setup.L]);
-    %b               = cos(setup.tacsFreq*2*pi*[1/setup.Fs:1/setup.Fs:setup.L]);
-    %[~,~,f]         = regress(r',cat(2,a',b',ones(size(t'))));
     [~,~,f]         = regress(r',cat(2,t',ones(size(t'))));
     recover         = corr(f(toi),e(1,toi)');     % true signal -> erp
     R(fidx+3,rep)   = recover;
@@ -271,9 +266,8 @@ set(gcf,'Position',[500 100 700 300],'paperpositionmode','auto')
 for fidx = 1 : size(R,1)
     line(fidx+(.25*-KxR(fidx,:)),koi,'color','k');
     line(fidx+(.25*+KxR(fidx,:)),koi,'color','k');
-    m = median(R(fidx,:).^2); 
-    line([fidx-.1,fidx+.1],[m,m],'color','b','linewidth',2)     
-    %w   = KxR(fidx,:)./sum(KxR(fidx,:));
+    m = mean(R(fidx,:).^2); 
+    line([fidx-.1,fidx+.1],[m,m],'color','b','linewidth',2)         
     m = mean(koi(KxR(fidx,:)>0.95));         
     line([fidx-.1,fidx+.1],[m,m],'color','r','linewidth',2)
 end

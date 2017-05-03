@@ -38,9 +38,7 @@
 \usepackage[colorinlistoftodos]{todonotes}
 
 \fancyhead[L]{Posted: \today}
-\fancyhead[R]{
-\includegraphics[width=4cm]{img/engrXiv_banner.png}
-}
+%\fancyhead[R]{\includegraphics[width=4cm]{img/engrXiv_banner.png}}
 \pagestyle{plain}
 \title{Adaptive Removal of the Transcranial Alternating Current Stimulation Artifact from the Electroencephalogram}
 \author[1,*]{Robert Guggenberger}
@@ -122,6 +120,7 @@ Such a multi-staged template-approach is therefore of limited utility for on-lin
 \subsection{Motivation}
 
 We were interested in development of a computationally fast approach, feasible for online artifact removal. At the same time, the approach was required to account for the dynamical modulation of the artifact amplitude, and the possibility of non-sinusoidal distortion and saturation. Ideally, the approach would allow to derive physiological signals at the frequency of stimulation, even if physiological oscillations were phase-locked to the stimulation signal.
+Furthermore, the approach should be usable offline, as to allow recovery of information from already collected datasets.
 
 \section{Approach}
 
@@ -135,7 +134,7 @@ The main idea is that at any given time point $t$, the recorded signal $r(t)$ is
 \subsection{Periodic Estimation}
 Assume that the~\gls{tacs} artifact were \emph{non-sinusoidal}, but \emph{stationary and periodic}. At the same time, assume that neurophysiological signals $n$ and noise $\epsilon$ were absent.
 Then, we could estimate the amplitude of $a$ at any time-point $t$ by using the signal $r$ recorded from any time-point, as long as this time-point is an integer multiple of the artifacts period length $p$ earlier~\eqref{eq:Comb}.
-Subtraction of a delayed version of the signal is also known as comb filter. Please note that for discretely sampled signals, this approach only works if the frequency of the artifact is an integer divisible of the sampling frequency.
+Subtraction of a delayed version of the signal is also known as comb filter. Please note that for discretely sampled signals, this approach natively supports only frequencies which are integer divisibles of the sampling frequency. If this is not the case, upsampling the recorded signals to an appropriate sampling rate, comb filtering, and downfiltering is a viable approach.
 
 \begin{eqnarray}
     \hat{a}(t) = r(t-np)\label{eq:Comb}\\
@@ -245,8 +244,6 @@ We implemented functions for kernel creation and artifact removal in Matlab 2016
 
 \subsection{Evaluation of Frequency Response}\label{sec:EvaluationFreq}
 
-\subsubsection{Exemplary Kernels}
-
 Examine the following exemplary kernels constructed for a sampling rate of 1KHz, a stimulation frequency of 10 Hz and a memory of 10~\figref{fig:ExemplaryCausalKernels}.
 
 \begin{figure}[hbtp]
@@ -276,58 +273,40 @@ Examine the following exemplary kernels constructed for a sampling rate of 1KHz,
 As you can see from figure~\ref{fig:ExemplaryCausalKernels}, the (numerically calculated) magnitude responses of the four approaches are highly similar. Their key characteristic is the strong supression of the target frequency and its integer multiples.
 Yet, note the difference in passbands. We find strong ringing in the passband for the uniform~(\ref{fig:UniformKernel}) and linear kernel~(\ref{fig:LinearKernel}), especially compared to the smooth transitions of the exponential~(\ref{fig:ExponentialKernel}) or Gaussian kernel~(\ref{fig:GaussKernel}).
 
-\subsubsection{Exemplary Kernel Tuning}
-
-We constructed a set of exponential kernels constructed with different $\tau$~\figref{fig:ExemplaryTauTuning} to explore their behavior.
-We find it of note that that in the limiting case of $\tau = 0$, the exponential kernel virtually converges with the uniform kernel~\figref{fig:ExpTau0}. Using a $\tau$ equal to the artifacts period length, the exponential kernel almost fully converges with the simple comb filter~\figref{fig:ExpTau100}.
-Note also that very high $\tau$ would return an impulse response, and therefore just pass all signals.
-
 \begin{figure}[hbtp]
-    \begin{subfigure}{.33\textwidth}
+    \begin{subfigure}{.245\textwidth}
         \includegraphics[width=\textwidth]{img/tau/kernel_exp_0.png}\\
         \includegraphics[width=\textwidth]{img/tau/mag_exp_0.png}
-        \caption{Exponential~$\tau=0$}\label{fig:ExpTau0}
+        \caption{$\tau=0, N=10$}\label{fig:ExpTau0}
     \end{subfigure}
-    \begin{subfigure}{.33\textwidth}
+    \begin{subfigure}{.245\textwidth}
         \includegraphics[width=\textwidth]{img/tau/kernel_exp_5.png}\\
         \includegraphics[width=\textwidth]{img/tau/mag_exp_5.png}
-        \caption{Exponential~$\tau=5$}\label{fig:ExpTau5}
+        \caption{$\tau=5, N=10$}\label{fig:ExpTau5}
     \end{subfigure}
-    \begin{subfigure}{.33\textwidth}
+    \begin{subfigure}{.245\textwidth}
         \includegraphics[width=\textwidth]{img/tau/kernel_exp_100.png}\\
         \includegraphics[width=\textwidth]{img/tau/mag_exp_100.png}
-        \caption{Exponential~$\tau=100$}\label{fig:ExpTau100}
+        \caption{$\tau=100, N=10$}\label{fig:ExpTau100}
     \end{subfigure}
-    \caption{Exemplary $\tau$ Tuning with $N=10$}\label{fig:ExemplaryTauTuning}
-\end{figure}
-
-Examine the following exponential kernels $N$~\figref{fig:ExemplaryNPTuning}.In the limiting case of $N = 1$, we acquire the simple comb filter~\figref{fig:ExNP1}. By increasing $N$ we achieve a flattening of the pass-band gain~\figref{fig:ExpNP50}.
-
-\begin{figure}[hbtp]
-    \begin{subfigure}{.33\textwidth}
-        \includegraphics[width=\textwidth]{img/np/kernel_exp_1.png}\\
-        \includegraphics[width=\textwidth]{img/np/mag_exp_1.png}
-        \caption{Exponential~$N=1$}\label{fig:ExNP1}
-    \end{subfigure}
-    \begin{subfigure}{.33\textwidth}
-        \includegraphics[width=\textwidth]{img/np/kernel_exp_10.png}\\
-        \includegraphics[width=\textwidth]{img/np/mag_exp_10.png}
-        \caption{Exponential~$N=5$}\label{fig:ExpNP10}
-    \end{subfigure}
-    \begin{subfigure}{.33\textwidth}
+    \begin{subfigure}{.245\textwidth}
         \includegraphics[width=\textwidth]{img/np/kernel_exp_50.png}\\
         \includegraphics[width=\textwidth]{img/np/mag_exp_50.png}
-        \caption{Exponential~$N=50$}\label{fig:ExpNP50}
+        \caption{$\tau= 4, N=50$}\label{fig:ExpNP50}
     \end{subfigure}
-    \caption{Exemplary $N$ Tuning with $\tau = 4$}\label{fig:ExemplaryNPTuning}
+    \caption{Exemplary $\tau$ and $N$ Tuning}\label{fig:ExemplaryTuning}
 \end{figure}
+
+We constructed a set of exponential kernels constructed with different $\tau$ and $N$ to explore their behavior~\figref{fig:ExemplaryTuning}.
+We find it of note that that in the limiting case of $\tau = 0$, the exponential kernel virtually converges with the uniform kernel~\figref{fig:ExpTau0}. Using a $\tau$ equal to the artifacts period length, the exponential kernel almost fully converges with the simple comb filter~\figref{fig:ExpTau100}.
+Note also that very high $\tau$ would return an impulse response, and therefore just pass all signals.
+This is also  true for the limiting case of $N = 1$, were we would again acquire a simple comb filter. By increasing $N$ we achieve a flattening of the pass-band gain~\figref{fig:ExpNP50}.
+
 
 
 \subsection{Evaluation on Simulated Signals}\label{sec:EvaluationSimulated}
 
-To evaluate the filters, we tested them on simulated signals. The simulated signal was created as superposition of a 10 Hz \gls{tacs}-artifact, and an \gls{erp}.
-
-\subsubsection{Simulation Parameters}
+To evaluate the filters, we tested them on simulated signals. The simulated signal was created as superposition of a 12 Hz \gls{tacs}-artifact, and an \gls{erp}.
 
 The \gls{erp} was simulated as numerical gradient of a flat top window, with amplitude set to 2 and a duration of 50 samples.
 
@@ -336,33 +315,23 @@ To achieve this, we distorted a sinusoidal by adding periodic white noise. Addit
 
 In that way, we were able to simulate event-independent modulations of the artifacts amplitude, and modulations locked to an event, as described by \citep{Noury_2016}, and which have a strong potential to mask any true event-related neurophysiological activity.
 
-\subsubsection{Evaluation}
 
 Subsequently, we explored different filter approaches, i.e.\ the two times four causal and symmetric weighted comb filters, all with a period number of 10. Additionally we evaluated adaptive discrete fourier filtering with the same period length of 10, and a linear regression of the artifact based on a copy of the efferent stimulation signal, as one could acquire from the \gls{tacs}-stimulator, e.g.\ the NeuroConn DC Plus.\footnote{Code can be found at \url{https://github.com/agricolab/ARtACS}}
 
-We simulated 500 simulated trials, calculated the r² value based on the correlation of the filtered signal with the original \gls{erp} and performed a kernel density estimation of their distribution.
-
 \begin{figure}[hbtp]
     \includegraphics[width=\textwidth]{img/eva/recovery_erp.png}
-    \caption{Figure shows the kernel density estimate of the R² between filtered and true signal, for several filter approaches. Blue bars indicate the mean, and red bars a robust estimate of the mode.}\label{fig:EvalOnErp}
+    \caption{KDE of R² for several filter approaches}\label{fig:EvalOnErp}
 \end{figure}
+
+We simulated 500 simulated trials, calculated the r² value based on the correlation of the filtered signal with the original \gls{erp} and performed a kernel density estimation of their distribution. Figure~\figref{fig:EvalOnErp} shows the kernel density estimate of the R² between filtered and true signal for several filter approaches. Blue bars indicate the mean, and red bars a robust estimate of the mode.
+
+Visual inspection of the R² estimates shows that the \gls{erp} is actually heavily masked by the~\gls{tacs} artifact.
+Almost any filtering approach is able to recover at least some information about the~\gls{erp}. Differences between the comb filters is small, but the symmetric exponential approach seems to be superior in mode and mean R².
+The R² distributions are wide, suggesting that regardless of the filtering apporach, some trials will contain residual artifacts. Possibly, rejection based on visual inspection can improve the mean R².
 
 \subsection{Evaluation on real data}\label{sec:EvaluationData}
 
 \section{Conclusion}
-
-One approach to model such a unknown dynamical system is with a Lévy-process. The key characteristics of such a process is that it is governed by randomness of the change between time-points. The increments are independent from each other, and are sampled from a continuous probability distribution with is stationary for the whole duration of the process. In that framework, the uncertainty of the estimate changes as a function of lag. Consider furthermore that we we only consider
-
-Ornstein-Uhlenbeck-Prozess discrete time AR (1) process
-
-\begin{equation}
-    a(t+1) = a(t) + \theta(\mu-a(t)) + e(t+1)
-\end{equation}
-where $\left|\theta\right|<1$ and $\mu$ is the model mean.
-Note that if the stochastic process is skewed or has a non-zero expectation value, the filter might need to add a constant for debiasing the estimation. If the stochastic process allows for jumps, small $N$ might return a more reliable estimation than large $N$.
-
-Negative weights
-This paper only dicusses real filter weights real, but complex weights might be a solution to tackle artifacts with periods that are not integer divisibles of the sampling frequency.
 
 \bibliographystyle{apalike-oadoi}
 \bibliography{sample}
