@@ -3,8 +3,8 @@ function setup =  generic()
 clear setup
 setup.NoiseLevel        = 0.1;
 
-setup.erpMagnitude      = 1;
-setup.eoFreq            = 10;
+setup.erpMagnitude      = 2; % sum of eoModulation and tacsModulation(1)
+setup.eoFreq            = 10; 
 setup.eoModulation      = 1;
 setup.eoPhase           = 'random';
 
