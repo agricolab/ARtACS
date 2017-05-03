@@ -62,6 +62,7 @@
 \newacronym{tms}{TMS}{transcranial magnetic stimulation}
 \newacronym{tpca}{tPCA}{temporal principal component analysis}
 \newacronym{sma}{SMA}{superposition of moving averages}
+\newacronym{erp}{ERP}{event-related potential}
 \makeglossaries{}
 
 % --------------------------------------------------------------------------
@@ -300,7 +301,7 @@ Note also that very high $\tau$ would return an impulse response, and therefore 
     \caption{Exemplary $\tau$ Tuning with $N=10$}\label{fig:ExemplaryTauTuning}
 \end{figure}
 
-Examine the following exponential kernels $N$~\figref{fig:ExemplaryNPTuning}.In the limiting case of $N = 1$, we acquire the simple comb filter~\figref{fig:ExpTau1}. By increasing $N$ we achieve a flattening of the pass-band gain~\figref{fig:ExpNP50}.
+Examine the following exponential kernels $N$~\figref{fig:ExemplaryNPTuning}.In the limiting case of $N = 1$, we acquire the simple comb filter~\figref{fig:ExNP1}. By increasing $N$ we achieve a flattening of the pass-band gain~\figref{fig:ExpNP50}.
 
 \begin{figure}[hbtp]
     \begin{subfigure}{.33\textwidth}
@@ -322,12 +323,29 @@ Examine the following exponential kernels $N$~\figref{fig:ExemplaryNPTuning}.In 
 \end{figure}
 
 
-\subsection{Evaluation on simulated signals}\label{sec:EvaluationSimulated}
+\subsection{Evaluation on Simulated Signals}\label{sec:EvaluationSimulated}
 
+To evaluate the filters, we tested them on simulated signals. The simulated signal was created as superposition of a 10 Hz \gls{tacs}-artifact, and an \gls{erp}.
 
+\subsubsection{Simulation Parameters}
 
-First, we constructed a kernel based on the respective weighting functions~\eqref{eq:Weighted} and desired memory, or number of periods $N$. This kernel was then used to remove the artifact in a recording by convolution.
-We wanted to evaluate the behavior of the filter in off-line analysis on simulated and real data and decided to use zero-padding for ease of computation.
+The \gls{erp} was simulated as numerical gradient of a flat top window, with amplitude set to 2 and a duration of 50 samples.
+
+The amplitude of the artifact was simulated as a distorted, non-stationary semi-sinusoidal.
+To achieve this, we distorted a sinusoidal by adding periodic white noise. Additionally, we had its amplitude driven by an Ornstein–Uhlenbeck, i.e. AR (1), process with mean 20, stiffness 0.5 and a variablity of 1, and an event-induced modulation with random phase and an amplitude of 1 over a Hanning window of 500 samples duration.
+
+In that way, we were able to simulate event-independent modulations of the artifacts amplitude, and modulations locked to an event, as described by \citep{Noury_2016}, and which have a strong potential to mask any true event-related neurophysiological activity.
+
+\subsubsection{Evaluation}
+
+Subsequently, we explored different filter approaches, i.e.\ the two times four causal and symmetric weighted comb filters, all with a period number of 10. Additionally we evaluated adaptive discrete fourier filtering with the same period length of 10, and a linear regression of the artifact based on a copy of the efferent stimulation signal, as one could acquire from the \gls{tacs}-stimulator, e.g.\ the NeuroConn DC Plus.\footnote{Code can be found at \url{https://github.com/agricolab/ARtACS}}
+
+We simulated 500 simulated trials, calculated the r² value based on the correlation of the filtered signal with the original \gls{erp} and performed a kernel density estimation of their distribution.
+
+\begin{figure}[hbtp]
+    \includegraphics[width=\textwidth]{img/eva/recovery_erp.png}
+    \caption{Figure shows the kernel density estimate of the R² between filtered and true signal, for several filter approaches. Blue bars indicate the mean, and red bars a robust estimate of the mode.}\label{fig:EvalOnErp}
+\end{figure}
 
 \subsection{Evaluation on real data}\label{sec:EvaluationData}
 

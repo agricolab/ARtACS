@@ -182,8 +182,8 @@ setup           = generate.generic();
 
 clear f
 np = 10;
-f(1,:)       = artacs.kernel.run(r,artacs.kernel.symmetric(np,10,1000,'exp'));
-f(2,:)       = artacs.kernel.run(r,artacs.kernel.causal(np,10,1000,'ave'));
+f(1,:)       = artacs.kernel.runpredefined(r,artacs.kernel.symmetric(np,10,1000,'exp'));
+f(2,:)       = artacs.kernel.runpredefined(r,artacs.kernel.causal(np,10,1000,'ave'));
 f(3,:)       = artacs.dft.complete(r,10,1000);
 
 tit_set = {'Symmetric Gaussian','Causal Uniform','DFT'};
@@ -222,7 +222,7 @@ print(gcf,[printfolder,'eva\three_approaches.png'],'-dpng')
 
 %% Suppress EO, recover ERP
 
-filt_axis       = {'Raw','Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','DFT'};
+filt_axis       = {'Raw','Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','Adaptive DFT','Efferent Copy'};
 filt_type       = {'ave','linear','exp','gauss','ave','linear','exp','gauss'};
 sym_type        = {'causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric'};
 NumberPeriods   = 10;
@@ -230,45 +230,39 @@ toi             = 1951:2050;
 setup           = generate.generic();
 rep_num         = 500;
 R               = [];
-S               = [];
 for rep = 1 :  rep_num   
     [r,e,t]         = generate.recording(setup);
-    suppress        = corr(r(toi)',(t(toi)+e(2,toi))');
     recover         = corr(r(toi)',e(1,toi)');    
     R(1,rep)        = recover;
-    S(1,rep)        = suppress;
 
     for fidx = 1 : length(filt_type)
         kernel          = artacs.kernel.create(NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx},sym_type{fidx});
-        f               = artacs.kernel.run(r,kernel);        
-        suppress        = corr(f(toi)',(t(toi)+e(2,toi))'); % general and event-related tacs artifact        
+        f               = artacs.kernel.runpredefined(r,kernel);        
         recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
-        R(fidx+1,rep)   = recover;
-        S(fidx+1,rep)   = suppress;
+        R(fidx+1,rep)   = recover;        
     end
     
-    f               = artacs.dft.local(r,setup.tacsFreq,setup.Fs,NumberPeriods);        
-    suppress        = corr(f(toi)',(t(toi)+e(2,toi))'); % general and event-related tacs artifact
+    f               = artacs.dft.local(r,setup.tacsFreq,setup.Fs,NumberPeriods);            
     recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
     R(fidx+2,rep)   = recover;
-    S(fidx+2,rep)   = suppress;
+
     
+    %a               = sin(setup.tacsFreq*2*pi*[1/setup.Fs:1/setup.Fs:setup.L]);
+    %b               = cos(setup.tacsFreq*2*pi*[1/setup.Fs:1/setup.Fs:setup.L]);
+    %[~,~,f]         = regress(r',cat(2,a',b',ones(size(t'))));
+    [~,~,f]         = regress(r',cat(2,t',ones(size(t'))));
+    recover         = corr(f(toi),e(1,toi)');     % true signal -> erp
+    R(fidx+3,rep)   = recover;
+        
 end
 
 koi = 0:0.01:1;
-KxS = [];
 KxR = [];
 for fidx = 1 : size(R,1)
     kx = ksdensity(R(fidx,:).^2,koi,'width',0.05);
     kx = kx./max(kx);   
     kx(kx<0.001) = NaN;  
-    KxR = cat(1,KxR,kx);
-    
-    kx = ksdensity(S(fidx,:).^2,koi,'width',0.05);
-    kx = kx./max(kx);
-    kx(kx<0.001) = NaN;    
-    KxS = cat(1,KxS,kx);
-    
+    KxR = cat(1,KxR,kx);        
 end
 %
 close all
