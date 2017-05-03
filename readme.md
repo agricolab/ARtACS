@@ -44,6 +44,9 @@ filtered_signal = artacs.dft.local(signal,freq,Fs,NumberPeriods)
 % based on fft/ifft using the complete trial duration
 filtered_signal = artacs.dft.complete(signal,freq,Fs)
 ```
+#### Performance
+<img src="docs\img\eva\recovery_erp.png" width = "1000">
+
 ###### More information:
 [On creating simulated signals](generate.md)
 
