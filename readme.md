@@ -81,7 +81,6 @@ I also implemented the possibility to generate simulated signals for evaluation 
 
 [Creating simulated signals](generate.md)
 
-|<img src="docs\img\div\three_approaches.png" width = "1000"></th>|
-|:----:|
-| _Exemplary results for filtering a generic signal_|
----
+|<img src="docs\img\eva\three_approaches_raw.png" width = "300">|<img src="docs\img\eva\three_approaches.png" width = "900">|
+|:----:|:----:|
+| _Exemplary generic signal_| _Exemplary filtering of a generic signal_|

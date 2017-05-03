@@ -177,7 +177,6 @@ for N = 1 : length(NumberPeriods)
            
 end
 %% Exemplary simulated signal
-%%
 setup           = generate.generic();  
 [r,e,t]         = generate.recording(setup);
 
@@ -185,7 +184,6 @@ clear f
 np = 10;
 f(1,:)       = artacs.kernel.run(r,artacs.kernel.symmetric(np,10,1000,'exp'));
 f(2,:)       = artacs.kernel.run(r,artacs.kernel.causal(np,10,1000,'ave'));
-%f(3,:)       = artacs.dft.local(r,10,1000,np);
 f(3,:)       = artacs.dft.complete(r,10,1000);
 
 tit_set = {'Symmetric Gaussian','Causal Uniform','DFT'};
@@ -200,7 +198,7 @@ set(gca,'xlim',[1501,2501],'xtick',[1:250:4000],'xticklabel',[-2000:250:2000])
 set(gca,'ylim',[-22 22])
 lh = legend([h1,h2,h3],'Applied tACS','Recording','True Signal');
 set(lh,'position',[0.15 .85 .08 .08])
-print(gcf,[printfolder,'div\three_approaches_raw.png'],'-dpng')
+print(gcf,[printfolder,'eva\three_approaches_raw.png'],'-dpng')
 
 figure
 set(gcf,'Position',[100 100 1200 300],'paperpositionmode','auto')
@@ -216,13 +214,80 @@ for k=1:3
 end
 lh = legend([h2,h1],'True Signal','Recovered Signal');
 set(lh,'position',[0.1 .8 .08 .08])
-print(gcf,[printfolder,'div\three_approaches.png'],'-dpng')
-%%
+print(gcf,[printfolder,'eva\three_approaches.png'],'-dpng')
+
+
+
+
+
+%% Suppress EO, recover ERP
+
+filt_axis       = {'Raw','Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','DFT'};
+filt_type       = {'ave','linear','exp','gauss','ave','linear','exp','gauss'};
+sym_type        = {'causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric'};
+NumberPeriods   = 10;
+toi             = 1951:2050;
+setup           = generate.generic();
+rep_num         = 500;
+R               = [];
+S               = [];
 for rep = 1 :  rep_num   
-    [r,e,t]         = generate.recording('generic');
+    [r,e,t]         = generate.recording(setup);
+    suppress        = corr(r(toi)',(t(toi)+e(2,toi))');
+    recover         = corr(r(toi)',e(1,toi)');    
+    R(1,rep)        = recover;
+    S(1,rep)        = suppress;
+
+    for fidx = 1 : length(filt_type)
+        kernel          = artacs.kernel.create(NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx},sym_type{fidx});
+        f               = artacs.kernel.run(r,kernel);        
+        suppress        = corr(f(toi)',(t(toi)+e(2,toi))'); % general and event-related tacs artifact        
+        recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
+        R(fidx+1,rep)   = recover;
+        S(fidx+1,rep)   = suppress;
+    end
+    
+    f               = artacs.dft.local(r,setup.tacsFreq,setup.Fs,NumberPeriods);        
+    suppress        = corr(f(toi)',(t(toi)+e(2,toi))'); % general and event-related tacs artifact
+    recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
+    R(fidx+2,rep)   = recover;
+    S(fidx+2,rep)   = suppress;
     
 end
 
-
+koi = 0:0.01:1;
+KxS = [];
+KxR = [];
+for fidx = 1 : size(R,1)
+    kx = ksdensity(R(fidx,:).^2,koi,'width',0.05);
+    kx = kx./max(kx);   
+    kx(kx<0.001) = NaN;  
+    KxR = cat(1,KxR,kx);
+    
+    kx = ksdensity(S(fidx,:).^2,koi,'width',0.05);
+    kx = kx./max(kx);
+    kx(kx<0.001) = NaN;    
+    KxS = cat(1,KxS,kx);
+    
+end
+%
+close all
+figure
+set(gcf,'Position',[500 100 700 300],'paperpositionmode','auto')
+for fidx = 1 : size(R,1)
+    line(fidx+(.25*-KxR(fidx,:)),koi,'color','k');
+    line(fidx+(.25*+KxR(fidx,:)),koi,'color','k');
+    m = median(R(fidx,:).^2); 
+    line([fidx-.1,fidx+.1],[m,m],'color','b','linewidth',2)     
+    %w   = KxR(fidx,:)./sum(KxR(fidx,:));
+    m = mean(koi(KxR(fidx,:)>0.95));         
+    line([fidx-.1,fidx+.1],[m,m],'color','r','linewidth',2)
+end
+set(gca,'ylim',[0 1],'ytick',[0:0.2:1],'yticklabel',[0:.2:1])
+set(gca,'xlim',[0.5 fidx+.5],'xtick',1:fidx,'xticklabel',filt_axis,'xaxislocation','bottom')
+set(gca,'XTickLabelRotation',45)
+ylabel('Recovery (R²)')
+grid on
+print(gcf,[printfolder,'eva\recovery_erp.png'],'-dpng')
 
 

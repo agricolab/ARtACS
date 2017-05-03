@@ -8,7 +8,7 @@ I implemented the possibility to generate simulated signals for evaluation of th
 [signal,echt]  = generate.recording('generic')
 ```
 
-|<img src="docs\img\div\three_approaches_raw.png" width = "400"></th>|
+|<img src="docs\img\eva\three_approaches_raw.png" width = "400"></th>|
 |:----:|
 | _Exemplary generic signal_|
 
