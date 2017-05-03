@@ -1,13 +1,15 @@
-Repo contains source code for creating and filtering EEG data from _periodic, non-sinusoidal_ and _non-stationary_ tCS artifacts using causal and symmetric comb filters.
+Repo contains source code for creating and filtering EEG data from _periodic, non-sinusoidal_ and _non-stationary_ tCS artifacts using ___causal or symmetric weighted comb filters___.
 
-Includes source code for simulation of event-related potentials and oscillations and tACS artifacts with or without saturation.
+Includes also code for _adaptive DFT_ and for simulation of event-related potentials during tACS.
 
-### Use Case
+#### Use Case
 |<img src="docs\img\eva\three_approaches_raw.png" width = "300">|<img src="docs\img\eva\three_approaches.png" width = "900">|
 |:----:|:----:|
 | _Exemplary generic signal_| _Exemplary filtering of a generic signal_|
-###### Comb Filter
+
+#### Comb Filter
 Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Comb filters natively supports frequencies which are integer divisibles of the sampling frequency. Filter other frequenices with artacs.kernel.run, which automatically  resamples the signal before and after filtering.
+
 ```matlab
 % Add package to path
 addpath('.\src\')
@@ -24,6 +26,9 @@ wfun            = 'gauss';
 symflag         = 'symmetric';
 % symflag  can be 'causal', 'symmetric'
 
+% Simulate a signal for filter evaluation.
+signal          = generate.recording('generic')
+
 % Run the kernel filter
 filtered_signal = artacs.kernel.run(signal,freq,NumberPeriods,Fs,wfun,symflag)
 
@@ -31,25 +36,13 @@ filtered_signal = artacs.kernel.run(signal,freq,NumberPeriods,Fs,wfun,symflag)
 kernel          = artacs.kernel.symmetric(NumberPeriods,freq,Fs,wfun);
 filtered_signal = artacs.kernel.runpredefined(signal,kernel,Fs)
 ```
-###### Sinusoidal Filter
-Filters the signal assuming a sinusoidal artifact and either _local_ or _complete_ stationarity. Works for any frequency.
+#### Sinusoidal Filter
+Filters the signal. Assumes a sinusoidal artifact which exhibits either _local_ or _complete_ stationarity. Works natively for any frequency.
 ```matlab
 % based on adaptive local dft
 filtered_signal = artacs.dft.local(signal,freq,Fs,NumberPeriods)
 % based on fft/ifft using the complete trial duration
 filtered_signal = artacs.dft.complete(signal,freq,Fs)
-```
-###### Signal Simulation
-Generates simulated signals for filter evaluation.
-```matlab
-% you can create a random configuration
-[signal,echt]  = generate.recording('random')
-
-% or a generic one
-[signal,echt]  = generate.recording('generic')
-
-% or define your own setup parameters
-[signal,echt]  = generate.recording(setup)
 ```
 ###### More information:
 [On creating simulated signals](generate.md)
