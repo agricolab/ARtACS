@@ -17,7 +17,7 @@ end
 function [sig,pick] = addpad(sig,h)
     sig     = sig(:)';    
     L       = length(h)*4;    
-    sig     = padarray(sig,[0,L],'circular');
+    sig     = padarray(sig,[0,L],'replicate');
     pick    = L+1:length(sig)-L;
 end
 

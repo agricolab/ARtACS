@@ -1,5 +1,5 @@
-% function run(signal,freq,NumberPeriods,Fs,wfun,symflag,tau)   
-function filt_sig = run(signal,freq,NumberPeriods,Fs,wfun,symflag,tau)   
+% function run(signal,NumberPeriods,freq,Fs,wfun,symflag,tau)   
+function filt_sig = run(signal,NumberPeriods,freq,Fs,wfun,symflag,tau)   
 
      period          = Fs/freq;         
      
@@ -7,8 +7,6 @@ function filt_sig = run(signal,freq,NumberPeriods,Fs,wfun,symflag,tau)
     resample_flag = (period ~= int32(period));
     if resample_flag
         trueFs      = Fs;       
-        trueFreq    = freq;
-        truePeriod  = period;
         trueSig     = signal;
         
         period      = ceil(period);
