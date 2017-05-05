@@ -7,10 +7,11 @@ Includes also code for _adaptive DFT_ and for simulation of event-related potent
 |:----:|:----:|
 | _Exemplary simulated signal_| _Exemplary filtering of a simulated signal_|
 
+<center><img src="docs\img\div\upper_limb_ecg.jpg"></center>
 
 |<img src="docs\img\eva\ecg_raw.png" width = "300">|<img src="docs\img\eva\ecg_filtered.png" width = "900">|
 |:----:|:----:|
-| _Real ECG recording_| _Recovered ECG_|
+| _Upper Limb Bipolar ECG recording_| _Recovered ECG_|
 
 #### Comb Filter
 Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Comb filters natively supports frequencies which are integer divisibles of the sampling frequency. Filter other frequenices with artacs.kernel.run, which automatically  resamples the signal before and after filtering.
@@ -52,6 +53,7 @@ filtered_signal = artacs.dft.complete(signal,freq,Fs)
 #### Performance
 <img src="docs\img\eva\recovery_ecg.png" width = "1000">
 Recovery (R²) of an ECG for different filtering approaches
+
 ###### More information:
 [On creating simulated signals](generate.md)
 
