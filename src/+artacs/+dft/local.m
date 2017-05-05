@@ -1,7 +1,7 @@
 % function filt_sig = local(sig,freq,Fs,NumberPeriods)    
 function filt_sig = local(sig,freq,Fs,NumberPeriods)    
                  
-    period          = Fs/freq;
+    period          = ceil(Fs/freq);
     window          = period*NumberPeriods;        
     time            = (0:window-1)/Fs;
     kernel          = (exp(1i*2*pi*freq*time));        

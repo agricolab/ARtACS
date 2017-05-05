@@ -24,6 +24,18 @@ function Kernel = create(NumberPeriods,freq,Fs,wfun,symflag,tau)
         else
             Kernel = artacs.kernel.symmetric(NumberPeriods,freq,Fs,wfun,tau);
         end
+    elseif strcmpi(symflag,'flipped')
+        if nargin < 6
+            Kernel = artacs.kernel.flipped(NumberPeriods,freq,Fs,wfun);
+        else
+            Kernel = artacs.kernel.flipped(NumberPeriods,freq,Fs,wfun,tau);
+        end
+    elseif strcmpi(symflag,'symflipped')
+        if nargin < 6
+            Kernel = artacs.kernel.symflipped(NumberPeriods,freq,Fs,wfun);
+        else
+            Kernel = artacs.kernel.symflipped(NumberPeriods,freq,Fs,wfun,tau);
+        end
     end
     
 end
