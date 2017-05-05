@@ -4,7 +4,13 @@ function Kernel = autocorr(sig,NumberPeriods,freq,Fs)
 period  = Fs/freq;
 pincl   = floor(length(sig)./period);
 sig     = sig(1:pincl*period);
-k       = xcorr(mean(reshape(sig,period,[]),1),'coeff');
+
+xc  = [];
+for phase_idx = 1 : period-1
+    xc = cat(1,xc,xcorr(sig(phase_idx:period:end),'coeff'));
+end
+k       = (mean(xc.^2));
+
 
 idx     = (length(k)+1)/2;
 k       = k(idx-ceil(NumberPeriods/2):idx-1);

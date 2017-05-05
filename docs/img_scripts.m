@@ -186,7 +186,7 @@ f(1,:)       = artacs.kernel.runpredefined(r,artacs.kernel.symmetric(np,10,1000,
 f(2,:)       = artacs.kernel.runpredefined(r,artacs.kernel.causal(np,10,1000,'ave'));
 f(3,:)       = artacs.dft.complete(r,10,1000);
 
-tit_set = {'Symmetric Gaussian','Causal Uniform','DFT'};
+tit_set = {'Symmetric Gaussian','Causal Uniform','Adaptive DFT'};
 close all
 figure
 set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
@@ -224,30 +224,42 @@ sym_type        = {'causal','causal','causal','causal','symmetric','symmetric','
 NumberPeriods   = 10;
 setup.tacsFreq  = 10;
 toi             = 1951:2050;
+setup.erpMagnitude = 0.5
 setup           = generate.generic();
-rep_num         = 500;
+rep_num         = 200;
 R               = [];
+F               = [];
+H               = [];
 for rep = 1 :  rep_num   
     [r,e,t]         = generate.recording(setup);
     recover         = corr(r(toi)',e(1,toi)');    
     R(1,rep)        = recover;
-
+    F(1,rep,:)      = t;
     for fidx = 1 : length(filt_type)
         %kernel          = artacs.kernel.create(NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx},sym_type{fidx});
         %f               = artacs.kernel.runpredefined(r,kernel);        
         f               = artacs.kernel.run(r,NumberPeriods,setup.tacsFreq,setup.Fs,filt_type{fidx},sym_type{fidx});        
         recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
         R(fidx+1,rep)   = recover;        
+        F(fidx+1,rep,:) = f;
     end
     
     f               = artacs.dft.local(r,setup.tacsFreq,setup.Fs,NumberPeriods);            
     recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
     R(fidx+2,rep)   = recover;
-
-    [~,~,f]         = regress(r',cat(2,t',ones(size(t'))));
-    recover         = corr(f(toi),e(1,toi)');     % true signal -> erp
-    R(fidx+3,rep)   = recover;
-        
+    F(fidx+2,rep,:) = f;
+    
+    %[~,~,f]         = regress(r',cat(2,t',ones(size(t'))));
+    %recover         = corr(f(toi),e(1,toi)');     % true signal -> erp
+    %R(fidx+3,rep)   = recover;
+    %F(fidx+3,rep,:) = t; 
+    
+    kernel              = artacs.kernel.autocorr(r,NumberPeriods,setup.tacsFreq,setup.Fs);
+    H                   = cat(1,H,kernel.h);
+    f                   = artacs.kernel.runpredefined(r,kernel);
+    recover             = corr(f(toi)',e(1,toi)');     % true signal -> erp
+    R(fidx+3,rep)       = recover;
+    F(fidx+3,rep,:)     = f; 
 end
 
 koi = 0:0.01:1;
@@ -267,7 +279,8 @@ for fidx = 1 : size(R,1)
     line(fidx+(.25*+KxR(fidx,:)),koi,'color','k');
     m = mean(R(fidx,:).^2); 
     line([fidx-.1,fidx+.1],[m,m],'color','b','linewidth',2)         
-    m = mean(koi(KxR(fidx,:)>0.95));         
+   %m = mean(koi(KxR(fidx,:)>0.95));      
+    m  = corr(e(1,toi)',squeeze(mean(F(fidx,:,toi),2)));
     line([fidx-.1,fidx+.1],[m,m],'color','r','linewidth',2)
 end
 set(gca,'ylim',[0 1],'ytick',[0:0.2:1],'yticklabel',[0:.2:1])
@@ -276,6 +289,16 @@ set(gca,'XTickLabelRotation',45)
 ylabel('Recovery (R²)')
 grid on
 print(gcf,[printfolder,'eva\recovery_erp.png'],'-dpng')
+
+
+
+figure
+hold on
+plot(e(1,toi))
+%plot(squeeze(mean(F(:,:,toi),2))')
+plot(squeeze(mean(F(end,:,toi),2))')
+
+
 %%
 
 
