@@ -27,4 +27,5 @@ function filt_sig = run(signal,NumberPeriods,freq,Fs,wfun,symflag,tau)
         filt_sig     = resample(filt_sig,trueFs,Fs);        
     end
 
+    
 end

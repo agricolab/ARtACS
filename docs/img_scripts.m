@@ -216,14 +216,13 @@ lh = legend([h2,h1],'True Signal','Recovered Signal');
 set(lh,'position',[0.1 .8 .08 .08])
 print(gcf,[printfolder,'eva\three_approaches.png'],'-dpng')
 
-
 %% Suppress EO, recover ERP
 
 filt_axis       = {'Raw','Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','Adaptive DFT','Efferent Copy'};
 filt_type       = {'ave','linear','exp','gauss','ave','linear','exp','gauss'};
 sym_type        = {'causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric'};
 NumberPeriods   = 10;
-setup.tacsFreq  = 12;
+setup.tacsFreq  = 10;
 toi             = 1951:2050;
 setup           = generate.generic();
 rep_num         = 500;
@@ -277,5 +276,6 @@ set(gca,'XTickLabelRotation',45)
 ylabel('Recovery (R²)')
 grid on
 print(gcf,[printfolder,'eva\recovery_erp.png'],'-dpng')
+%%
 
 
