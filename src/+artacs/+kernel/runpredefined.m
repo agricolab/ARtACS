@@ -1,11 +1,11 @@
 % function filt_sig = runpredefined(signal,kernel,Fs)
 function filt_sig = runpredefined(signal,kernel,Fs)
-
+    
     if nargin < 3, Fs = kernel.Fs; end    
     % Resample  to bring kernel and signal in alignment
     if (Fs ~= kernel.Fs), signal = resample(signal,Fs,kernel.Fs); end
     
-    [signal,pick]       = addpad(signal,kernel.h);
+    [signal,pick]       = addpad(signal,kernel);
     filt_sig            = (conv(signal(:)',kernel.h,'same'));    
     filt_sig            = rempad(filt_sig,pick);
     
@@ -14,11 +14,26 @@ function filt_sig = runpredefined(signal,kernel,Fs)
     
 end
 
-function [sig,pick] = addpad(sig,h)
-    sig     = sig(:)';    
-    L       = length(h)*4;    
-    sig     = padarray(sig,[0,L],'replicate');
-    pick    = L+1:length(sig)-L;
+function [sig,pick] = addpad(sig,kernel)
+    period      = kernel.Fs/kernel.Frequency;
+    sig         = sig(:)';    
+    
+    % leftpadding
+    pincl       = floor(length(sig)./period);    
+    tacs        = mean(reshape(sig(1:pincl*period),period,[]),2)';
+    leftpad     = repmat(tacs,1,kernel.NumberPeriods*2);    
+    
+    % rightpadding
+    pincl       = floor(length(sig)./period);    
+    tmp         = fliplr(sig);
+    tacs        = fliplr(mean(reshape(tmp(1:pincl*period),period,[]),2)');
+    rightpad     = repmat(tacs,1,kernel.NumberPeriods*2);    
+    %L           = length(h)*4;    
+    %sig         = padarray(sig,[0,L],'replicate');
+    %pick        = L+1:length(sig)-L;
+    
+    sig         = cat(2,leftpad,sig,rightpad);    
+    pick        = (length(leftpad)+1) : (length(sig)-length(rightpad));
 end
 
 function sig = rempad(sig,pick)

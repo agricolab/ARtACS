@@ -1,4 +1,4 @@
-% function Kernel = create(NumberPeriods,freq,Fs,wfun)    
+% function Kernel = create(NumberPeriods,freq,Fs,wfun,tau,incflag,delay)    
 % wfun can be 
 % 'ave' : average
 % 'linear' : linear
@@ -6,7 +6,7 @@
 % 'gauss' : gaussian
 % 'cauchy' : cauchy 
 
-function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau)    
+function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau,incflag,delay)    
       
     
     % prepare variables    
@@ -29,15 +29,15 @@ function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau)
         k                       = @(N)(N*(N+1))/2;        
         w                       = @(n,N)(N-n+1)./k(N);            
     elseif strcmpi(wfun,'exp')        
-        if nargin < 5, tau = 4;  end
+        if nargin < 5 || strcmpi(tau,'default'), tau = 4;  end
         f                       = @(n,N)exp(tau-(tau*n/N));        
         w                       = @(n,N)f(n,N)./sum(f(1:N,N));
     elseif strcmpi(wfun,'gauss')
-        if nargin < 5, tau = 3;  end
+        if nargin < 5 || strcmpi(tau,'default'), tau = 3;  end
         f                       = @(n,N)(sqrt(tau/(2*pi))*exp((-(tau^2)*((n./N).^2))./2));
         w                       = @(n,N)f(n,N)./sum(f(1:N,N));
     elseif strcmpi(wfun,'cauchy')        
-        if nargin < 5, tau = 1;  end        
+        if nargin < 5 || strcmpi(tau,'default'), tau = 1;  end        
         f                       = @(n,N)(1/pi)*(tau./((tau^2)-((N-n)./N)));
         w                       = @(n,N)f(n,N)./sum(f(1:N,N));
     elseif strcmpi(wfun,'ave')        
@@ -50,8 +50,18 @@ function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau)
     end    
     
     % construct kernel        
-    h                      = fliplr(-w(1:NumberPeriods-1,NumberPeriods-1));                         
-    z                      = zeros(1,(length(h))*period);
+    weights                 = -w(1:NumberPeriods-1,NumberPeriods-1);
+    if nargin < 6, incflag = 'dec'; end
+    if strcmpi(incflag,'dec')
+        
+    elseif strcmpi(incflag,'inc')
+        weights = fliplr(weights);
+    end        
+    
+    if nargin < 7, delay = 0; end
+    weights                 = [zeros(1,delay),weights];
+    h                       = fliplr(weights);                         
+    z                       = zeros(1,(length(h))*period);
     
     kernel                 = [];
     for h_idx = 1 : length(h)
