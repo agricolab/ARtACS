@@ -9,7 +9,7 @@ printfolder = '.\docs\img\';
 datafolder = '.\dev\data\ecg\';
 %%
 D = dir([datafolder,'*.vhdr']);
-trange = 2000;
+trange = 3000;
 
 cfg                         = [];
 cfg.trialfun                = 'ft_trialfun_general';
@@ -40,8 +40,8 @@ for hp_idx = 1 : length(HeartPeaks)
     
     % bipolar
     tmp = ECG(3,toi)-ECG(2,toi);
-    tmp = detrend(tmp-mean(tmp));   
-
+    tmp = detrend(tmp);
+    tmp = tmp-mean(tmp);
     tru = cat(1,tru,tmp);
 end
 close all
@@ -52,7 +52,7 @@ cfg                         = [];
 cfg.trialfun                = 'ft_trialfun_general';
 cfg.dataset                 = [datafolder,'10Hz.vhdr'];
 %cfg.dataset                 = [datafolder,'10Hz3ma.vhdr'];
-%cfg.dataset                 = [datafolder,'11Hz.vhdr'];
+cfg.dataset                 = [datafolder,'11Hz.vhdr'];
 cfg.trialdef.triallength    = Inf;
 cfg                         = ft_definetrial(cfg);
 data                        = ft_preprocessing(cfg);
@@ -77,8 +77,7 @@ for hp_idx = 1 : length(HeartPeaks)
     
     % bipolar
     tmp = ECG(3,toi)-ECG(2,toi);
-    tmp = tmp-mean(tmp);   
-        
+    tmp = tmp-mean(tmp);           
     trl = cat(1,trl,tmp);            
 end
 
@@ -87,21 +86,24 @@ figure
 hold on
 plot(mean(-trl,1))
 plot(mean(-tru,1))
-%
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Filtering
 %
-filt_axis       = {'Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','Adaptive DFT','Autoadaptive'};
+filt_axis       = {'Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','Automatic Kernel','Adaptive DFT','Adaptive PCA','Self Bootstrap'};
 filt_type       = {'ave','linear','exp','gauss','ave','linear','exp','gauss'};
 sym_type        = {'causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric'};
-%sym_type        = {'flipped','flipped','flipped','flipped','symflipped','symflipped','symflipped','symflipped'};
-NumberPeriods   = 10;
-tacsFreq        = 10;
+%sym_type        = {'causal','causal','causal','causal','twopass','twopass','twopass','twopass'};
+%sym_type        = {'twopass','twopass','twopass','twopass','symmetric','symmetric','symmetric','symmetric'};
+inc_type        = {'dec','dec','dec','dec','dec','dec','dec','dec'};
+%inc_type        = {'inc','inc','inc','inc','inc','inc','inc','inc'};
+Delay           = 0;
+NumberPeriods   = 4;
+tacsFreq        = 11;
 Fs              = 1000;
 
-%toi             = trange-250:trange+251;
-%toi             = trange-49:trange+49;
-toi             = trange-149:trange+149;
+toi             = trange-250:trange+251;
+
 R               = [];
 e               = mean(tru,1);
 e               = e-mean(e);
@@ -111,27 +113,52 @@ H = [];
 for trl_idx = 1 : size(trl,1)
     r = trl(trl_idx,:);
     for fidx = 1 : length(filt_type)   
-        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,filt_type{fidx},sym_type{fidx});                
+        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',inc_type{fidx},Delay);                                     
         recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
         R(fidx,trl_idx)   = recover;   
         F(fidx,trl_idx,:) = f;
     end
-    f                   = artacs.dft.local(r,tacsFreq,Fs,NumberPeriods);                
-    recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
+    kernel              = artacs.kernel.automatic(r,NumberPeriods,tacsFreq,Fs);
+    H                   = cat(1,H,kernel.h);
+    f                   = artacs.kernel.runpredefined(r,kernel);
+    recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp    
     R(fidx+1,trl_idx)   = recover;
     F(fidx+1,trl_idx,:) = f;
     
-    kernel              = artacs.kernel.autocorr(r,NumberPeriods,tacsFreq,Fs);
-    H                   = cat(1,H,kernel.h);
-    f                   = artacs.kernel.runpredefined(r,kernel);
+    f                   = artacs.dft.local(r,tacsFreq,Fs,NumberPeriods);                
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
     R(fidx+2,trl_idx)   = recover;
     F(fidx+2,trl_idx,:) = f;
+    
+    f                   = artacs.template.compremoval(r,tacsFreq,Fs);
+    recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
+    R(fidx+3,trl_idx)   = recover;
+    F(fidx+3,trl_idx,:) = f;
+    
+    f                   = tru(datasample(1:size(tru,1),1),:);
+    recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
+    R(fidx+4,trl_idx)   = recover;
+    F(fidx+4,trl_idx,:) = f;
+    
 end
-
 %%
-avefun = @(x,prm)median(x,prm);
-
+Efun      = @(x,prm)median(x,prm);
+Efun      = @(x,prm)mean(x,prm);
+close all
+figure
+set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
+for fidx = 1 : size(F,1)
+    subplot(3,4,fidx)
+    hold on
+    plot(Efun(tru(:,toi),1))
+    plot(squeeze(Efun(F(fidx,:,toi),2))')    
+    set(gca,'ylim',[-12 17])
+    title(filt_axis{fidx})   
+end
+h = legend('Without tacs','With Artifact Removed');
+set(h,'position',[0.05 .85 .08 .08])
+%%
+smpl_num    = 30;
 koi = 0:0.01:1;
 KxR = [];
 KxA = [];
@@ -143,10 +170,9 @@ for fidx = 1 : size(R,1)
     kx(kx<0.001) =NaN;  
     KxR = cat(1,KxR,kx);        
     
-    bootstat = [];
-    smpl_num = 30;
-    for bot_rep = 1 : 100
-        bootstat = cat(2,bootstat,squeeze(avefun(F(fidx,datasample(1:trl_num,smpl_num),toi),2)));
+    bootstat = [];    
+    for bot_rep = 1 : 200
+        bootstat = cat(2,bootstat,squeeze(Efun(F(fidx,datasample(1:trl_num,smpl_num),toi),2)));
     end
     r   = diag(corr(bootstat,repmat(e(1,toi),100,1)'));    
     MR = [MR,mean(r.^2)];
@@ -168,7 +194,7 @@ for fidx = 1 : size(R,1)
     
     line(fidx+(.25*-KxA(fidx,:))+.2,koi,'color','k');
     line(fidx+(.25*+KxA(fidx,:))+.2,koi,'color','k');
-    m  = corr(mean(tru(:,toi))',squeeze(avefun(F(fidx,:,toi),2))).^2;
+    m  = corr(mean(tru(:,toi))',squeeze(Efun(F(fidx,:,toi),2))).^2;
     m = MR(fidx);
     ha = line([fidx+.1,fidx+.3],[m,m],'color','r','linewidth',2);
     
@@ -181,24 +207,6 @@ set(lh,'position',[0.15 .85 0 .130])
 ylabel('Recovery (R²)')
 grid on
 print(gcf,[printfolder,'eva\recovery_ecg.png'],'-dpng')
-
-
-figure
-hold on
-plot(mean(tru(:,toi),1))
-plot(squeeze(avefun(F(:,:,toi),2))')
-
-figure
-hold on
-plot(mean(tru(:,toi),1))
-plot(squeeze(avefun(F(8,:,toi),2))')
-legend('Without tacs','With Artifact Removed')
-
-
-figure
-hold on
-plot(mean(tru(:,toi),1))
-plot(squeeze(avefun(F(:,datasample(1:trl_num,smpl_num),toi),2))')
 
 a_pwr   = mean(range(trl(:,toi),2));
 s_pwr   = mean(range(tru(:,toi),2));
@@ -217,9 +225,9 @@ tit_set     = {'Symmetric Gaussian','Causal Uniform','Adaptive DFT'};
 e               = mean(tru,1);
 e               = e-mean(e);
 clear f
-f(1,:)      = squeeze(avefun(F(8,:,:),2))';
-f(2,:)      = squeeze(avefun(F(1,:,:),2))';
-f(3,:)      = squeeze(avefun(F(9,:,:),2))';
+f(1,:)      = squeeze(Efun(F(8,:,:),2))';
+f(2,:)      = squeeze(Efun(F(1,:,:),2))';
+f(3,:)      = squeeze(Efun(F(9,:,:),2))';
 
 close all
 figure
