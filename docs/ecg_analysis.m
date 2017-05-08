@@ -170,7 +170,7 @@ for fidx = [4,6,14,10,16,17]
         h2 = plot(squeeze(Efun(F(fidx,:,toi),2))','linewidth',2,'color',[0 0.4470  0.7410]);
     end
     set(gca,'xlim',[1 length(toi)],'xtick',[1:50:4000],'xticklabel',[(-length(toi)/2+1):50:length(toi)/2])
-    set(gca,'ylim',[-12 17])
+    set(gca,'ylim',[-20 20],'ytick',[-1000:10:1000])
     title(filt_axis{fidx})   
 end
 h = legend([h1,h2],'Stim-free Comparison','Artifact Removed','95% CI');

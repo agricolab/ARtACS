@@ -10,7 +10,7 @@ This research is supported by the [BMBF: FKZ 13GW0119](https://www.medizintechno
 | _Recover the ECG_<br>(which is ~120dB weaker than tACS) |<img src="docs\img\eva\ecg_raw.png" width= "400">|
 #### Performance
 <img src="docs\img\eva\ecg_performance.png" width = "1000">
-Recovery (R²) of an ECG for a variety of filtering approaches
+
 
 #### Weighted Comb Filter
 Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Comb filters natively support only frequencies which are integer divisibles of the sampling frequency. When artacs.kernel.run is used, the signal is automatically resampled, to circumvent this limitation. Note that the method still requires integer frequencies.
@@ -57,6 +57,8 @@ filtered_signal = artacs.dft.local(signal,freq,Fs,NumberPeriods)
 filtered_signal = artacs.dft.complete(signal,freq,Fs)
 ```
 
+<img src = "./docs/img/eva/recovery_ecg.png">
+Recovery (R²) of an ECG for a variety of filtering approaches
 
 ###### More information:
 [On creating simulated signals](generate.md)
