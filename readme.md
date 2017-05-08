@@ -7,7 +7,7 @@ This research is supported by the [BMBF: FKZ 13GW0119](https://www.medizintechno
 #### Use Case
 | _Upper Limb Bipolar ECG recording_ <br> _during 11 Hz tACS_ |<img src="docs\img\div\upper_limb_ecg.jpg" width = "400">|
 |:----:|:----:|
-| _Recover the ECG_<br>(which is ~120dB weaker than tACS) |<img src="docs\img\eva\ecg_raw.png" width = "400">|
+| _Recover the ECG_<br>(which is ~120dB weaker than tACS) |<img src="docs\img\eva\ecg_raw.png" width= "400">|
 #### Performance
 <img src="docs\img\eva\ecg_performance.png" width = "1000">
 Recovery (R²) of an ECG for a variety of filtering approaches
