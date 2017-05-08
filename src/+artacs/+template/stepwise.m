@@ -21,7 +21,6 @@ end
 [c,s]           = pca(SS);
 filt_sig        = SS;
 artifact_idx    = round(Freq/Fs*length(tmp_sig)) + 1;
-%physio_idx      = round(1:45/Fs*length(tmp_sig)) + 1;
 physio_idx1      = round((Freq-2)/Fs*length(tmp_sig)) + 1;
 physio_idx2      = round((Freq+2)/Fs*length(tmp_sig)) + 1;
 ffx             = fft(reshape(filt_sig,1,[]));

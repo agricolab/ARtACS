@@ -4,7 +4,7 @@ function filt_sig = run(Signal,NumberPeriods,Freq,Fs,symflag,wfun,tau,dirflag,De
     if nargin < 5, symflag = 'symmetric'; end
     if nargin < 6, wfun = 'automatic'; end
     if nargin < 7, tau = 'default'; end
-    if nargin < 8, dirflag = 'dec'; end
+    if nargin < 8, dirflag = 'default'; end
     if nargin < 9, Delay = 0; end  
     if nargin < 10, Latency = ceil(length(Signal)./2); end  
     

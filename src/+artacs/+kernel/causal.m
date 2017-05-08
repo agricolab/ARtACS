@@ -52,7 +52,7 @@ function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau,incflag,delay)
     % construct kernel        
     weights                 = -w(1:NumberPeriods-1,NumberPeriods-1);
     if nargin < 6, incflag = 'dec'; end
-    if strcmpi(incflag,'dec')
+    if strcmpi(incflag,'dec') || strcmpi(incflag,'default')
         
     elseif strcmpi(incflag,'inc')
         weights = fliplr(weights);

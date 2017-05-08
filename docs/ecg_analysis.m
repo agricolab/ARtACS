@@ -80,25 +80,23 @@ for hp_idx = 1 : length(HeartPeaks)
     tmp = tmp-mean(tmp);           
     trl = cat(1,trl,tmp);            
 end
-
-close all
-figure
-hold on
-plot(mean(-trl,1))
-plot(mean(-tru,1))
+clc
+fprintf(1,'Finished\n')
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Filtering
 %
-filt_axis       = {'Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','Automatic Kernel','Adaptive DFT','Adaptive PCA','Self Bootstrap'};
-filt_type       = {'ave','linear','exp','gauss','ave','linear','exp','gauss'};
-sym_type        = {'causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric'};
-%sym_type        = {'causal','causal','causal','causal','twopass','twopass','twopass','twopass'};
-%sym_type        = {'twopass','twopass','twopass','twopass','symmetric','symmetric','symmetric','symmetric'};
-inc_type        = {'dec','dec','dec','dec','dec','dec','dec','dec'};
-%inc_type        = {'inc','inc','inc','inc','inc','inc','inc','inc'};
-Delay           = 0;
-NumberPeriods   = 4;
+filt_axis       = {'Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Causal Automatic',...
+                    'Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','Symmetric Automatic',...
+                    'Piecewise Uniform','Piecewise  Linear','Piecewise  Exponential','Piecewise Gaussian','Piecewise Automatic',...
+                    'Adaptive DFT','Adaptive PCA','Comparison Bootstrap'};
+filt_type       = {'ave','linear','exp','gauss','automatic','ave','linear','exp','gauss','automatic','ave','linear','exp','gauss','automatic'};
+sym_type        = {'causal','causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric','symmetric','piecewise','piecewise','piecewise','piecewise','piecewise'};
+inc_type        = {'dec','dec','dec','dec','dec','inc','inc','inc','inc','inc','dec','dec','dec','dec','dec'};
+Delay           = [0 0 0 0 0,5 5 5 5 5,0 0 0 0 0];
+Latency         = trange+1;
+NumberPeriods   = 10;
+%tacsFreq        = 10;
 tacsFreq        = 11;
 Fs              = 1000;
 
@@ -113,52 +111,73 @@ H = [];
 for trl_idx = 1 : size(trl,1)
     r = trl(trl_idx,:);
     for fidx = 1 : length(filt_type)   
-        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',inc_type{fidx},Delay);                                     
+        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',inc_type{fidx},Delay(fidx),Latency);                                     
+
         recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
         R(fidx,trl_idx)   = recover;   
-        F(fidx,trl_idx,:) = f;
+        F(fidx,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
     end
-    kernel              = artacs.kernel.automatic(r,NumberPeriods,tacsFreq,Fs);
-    H                   = cat(1,H,kernel.h);
-    f                   = artacs.kernel.runpredefined(r,kernel);
-    recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp    
-    R(fidx+1,trl_idx)   = recover;
-    F(fidx+1,trl_idx,:) = f;
     
     f                   = artacs.dft.local(r,tacsFreq,Fs,NumberPeriods);                
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
-    R(fidx+2,trl_idx)   = recover;
-    F(fidx+2,trl_idx,:) = f;
+    R(fidx+1,trl_idx)   = recover;
+    F(fidx+1,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
     
-    f                   = artacs.template.compremoval(r,tacsFreq,Fs);
+    f                   = artacs.template.stepwise(r,tacsFreq,Fs);
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
-    R(fidx+3,trl_idx)   = recover;
-    F(fidx+3,trl_idx,:) = f;
+    R(fidx+2,trl_idx)   = recover;
+    F(fidx+2,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
     
     f                   = tru(datasample(1:size(tru,1),1),:);
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
-    R(fidx+4,trl_idx)   = recover;
-    F(fidx+4,trl_idx,:) = f;
+    R(fidx+3,trl_idx)   = recover;
+    F(fidx+3,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
     
 end
 %%
-Efun      = @(x,prm)median(x,prm);
+%Efun      = @(x,prm)median(x,prm);
 Efun      = @(x,prm)mean(x,prm);
 close all
 figure
-set(gcf,'Position',[100 100 1200 500],'paperpositionmode','auto')
+set(gcf,'Position',[100 100 1200 900],'paperpositionmode','auto')
 for fidx = 1 : size(F,1)
-    subplot(3,4,fidx)
-    hold on
-    plot(Efun(tru(:,toi),1))
-    plot(squeeze(Efun(F(fidx,:,toi),2))')    
+    subplot(4,5,fidx)
+    hold on    
+    plot(Efun(tru(:,toi),1)')    
+    plot(squeeze(Efun((utils.baseline(squeeze(F(fidx,:,toi)),1:200,1)'),2))')    
     set(gca,'ylim',[-12 17])
     title(filt_axis{fidx})   
 end
 h = legend('Without tacs','With Artifact Removed');
 set(h,'position',[0.05 .85 .08 .08])
 %%
-smpl_num    = 30;
+%Efun      = @(x,prm)median(x,prm);
+Efun      = @(x,prm)mean(x,prm);
+close all
+figure
+set(gcf,'Position',[100 100 800 700],'paperpositionmode','auto')
+count = 0;
+for fidx = [4,6,14,10,16,17]
+    count = count+1;
+    subplot(3,2,count)
+    hold on
+    
+    [h,p,ci] = ttest(squeeze(F(end,:,toi)));                
+    h3 = patch([1:length(ci),length(ci):-1:1],[ci(1,:),fliplr(ci(2,:))],ones(1,length(ci)*2),'facecolor',[0.8500 0.3250 0.0980],'facealpha',0.25,'edgecolor',[0.8500 0.3250 0.0980],'edgealpha',0.1);                
+    h1 = plot(mean(ci),'linewidth',1,'color',[0.8500 0.3250 0.0980]);
+    if fidx ~= 18        
+        %h1 = plot(Efun(tru(:,toi),1),'linewidth',2,'color',[0.8500 0.3250 0.0980]);
+        h2 = plot(squeeze(Efun(F(fidx,:,toi),2))','linewidth',2,'color',[0 0.4470  0.7410]);
+    end
+    
+    set(gca,'ylim',[-12 17])
+    title(filt_axis{fidx})   
+end
+h = legend([h1,h2],'Stim-free Comparison','Artifact Removed','95% CI');
+set(h,'position',[0.08 .84 .08 .08])
+print(gcf,[printfolder,'eva\ecg_performance.png'],'-dpng')
+%%
+smpl_num    = 200;
 koi = 0:0.01:1;
 KxR = [];
 KxA = [];
@@ -185,7 +204,7 @@ end
 %
 close all
 figure
-set(gcf,'Position',[500 100 700 300],'paperpositionmode','auto')
+set(gcf,'Position',[500 100 900 300],'paperpositionmode','auto')
 for fidx = 1 : size(R,1)
     line(fidx+(.25*-KxR(fidx,:))-.2,koi,'color','k');
     line(fidx+(.25*+KxR(fidx,:))-.2,koi,'color','k');        
@@ -231,84 +250,24 @@ f(3,:)      = squeeze(Efun(F(9,:,:),2))';
 
 close all
 figure
-set(gcf,'Position',[100 100 400 300],'paperpositionmode','auto')
+set(gcf,'Position',[100 100 500 400],'paperpositionmode','auto')
 subplot(2,1,1)
 hold on
-h1 = plot(trl(1,:),'color',[.8 .8 .8],'linewidth',2);
-h2 = plot(e,'r');
-set(gca,'xlim',[1501,2501],'xtick',[1:250:4000],'xticklabel',[-2000:250:2000])
-set(gca,'ylim',[-20000 20000],'ytick',[-20000,0,20000],'yticklabel',[-20,0,20])
+h1 = plot(trl(1,toi),'color',[.8 .8 .8],'linewidth',2);
+h2 = plot(e(toi),'r');
+set(gca,'xlim',[1 length(toi)],'xtick',[1:50:4000],'xticklabel',[(-length(toi)/2+1):50:length(toi)/2])
+set(gca,'ylim',[-20000 20000],'ytick',[-20000,-10000,0,10000,20000],'yticklabel',[-20,10,0,10,20])
 ylabel('mV')
 subplot(2,1,2)
 hold on
-h1 = plot(trl(1,:),'color',[.8 .8 .8],'linewidth',2);
-h2 = plot(mean(tru,1),'r');
-set(gca,'xlim',[1501,2501],'xtick',[1:250:4000],'xticklabel',[-2000:250:2000])
-set(gca,'ylim',[-15 20],'ytick',[-1000:10:1000])
+h1 = plot(trl(1,toi),'color',[.8 .8 .8],'linewidth',2);
+h2 = plot(e(toi),'r');
+set(gca,'xlim',[1 length(toi)],'xtick',[1:50:4000],'xticklabel',[(-length(toi)/2+1):50:length(toi)/2])
+set(gca,'ylim',[-20 20],'ytick',[-1000:10:1000])
 ylabel('µV')
 xlabel('ms')
-lh = legend([h1,h2],'Recording','True Signal');
+lh = legend([h1,h2],'Artifacted Recording','Stim-free Comparison');
 set(lh,'position',[0.8 .85 .08 .08])
 print(gcf,[printfolder,'eva\ecg_raw.png'],'-dpng')
-
-figure
-set(gcf,'Position',[100 100 1200 300],'paperpositionmode','auto')
-for k=1:3
-    subplot(1,3,k)
-    hold on
-    h2 = plot(e(1,:),'color',[.8 .8 .8],'linewidth',2);
-    h1 = plot(f(k,:),'b','linewidth',1);      
-    %set(gca,'xlim',[1921,2081],'xtick',[1:25:4000],'xticklabel',[-2000:25:2000])
-	
-    set(gca,'xlim',[1501,2501],'xtick',[1:250:4000],'xticklabel',[-2000:250:2000])
-    set(gca,'ylim',[-15 20],'ytick',[-1000:10:1000])
-
-    title(tit_set{k})
-end
-lh = legend([h2,h1],'True Signal','Recovered Signal');
-set(lh,'position',[0.1 .8 .08 .08])
-print(gcf,[printfolder,'eva\ecg_filtered.png'],'-dpng')
-%
-
-close all
-figure
-set(gcf,'Position',[100 100 800 600],'paperpositionmode','auto')
-subplot(2,2,1)
-hold on
-h1 = plot(trl(1,:),'color',[.8 .8 .8],'linewidth',2);
-h2 = plot(e,'r');
-set(gca,'xlim',[1501,2501],'xtick',[1:250:4000],'xticklabel',[-2000:250:2000])
-set(gca,'ylim',[-20000 20000],'ytick',[-20000,0,20000],'yticklabel',[-20,0,20])
-ylabel('mV')
-subplot(2,2,3)
-hold on
-h1 = plot(trl(1,:),'color',[.8 .8 .8],'linewidth',2);
-h2 = plot(mean(tru,1),'r');
-set(gca,'xlim',[1501,2501],'xtick',[1:250:4000],'xticklabel',[-2000:250:2000])
-set(gca,'ylim',[-15 20],'ytick',[-1000:10:1000])
-ylabel('µV')
-lh = legend([h1,h2],'Artifacted Recording','True Signal');
-set(lh,'position',[0.35 .85 .08 .08])
-
-subplot(2,2,2)
-hold on
-h2 = plot(e(1,:),'color','r','linewidth',2);
-h1 = plot(f(1,:),'b','linewidth',1);      
-set(gca,'xlim',[1501,2501],'xtick',[1:250:4000],'xticklabel',[-2000:250:2000])
-set(gca,'ylim',[-15 20],'ytick',[-1000:10:1000])
-title(tit_set{1})
-
-subplot(2,2,4)
-hold on
-h2 = plot(e(1,:),'color','r','linewidth',2);
-h1 = plot(f(2,:),'b','linewidth',1);      
-set(gca,'xlim',[1501,2501],'xtick',[1:250:4000],'xticklabel',[-2000:250:2000])
-set(gca,'ylim',[-15 20],'ytick',[-1000:10:1000])
-title(tit_set{2})
-lh = legend([h1,h2],'Recovered Signal','True Signal');
-set(lh,'position',[0.85 .85 .08 .08])
-
-
-print(gcf,[printfolder,'eva\ecg_overview.png'],'-dpng')
 %
 %%
