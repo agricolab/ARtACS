@@ -1,5 +1,7 @@
 % function Kernel = automatic(Signal,NumberPeriods,freq,Fs)    
-function Kernel = automatic(Signal,NumberPeriods,Freq,Fs)    
+function Kernel = automatic(Signal,NumberPeriods,Freq,Fs,symflag)    
+
+if nargin < 5, symflag = 'symmetric'; end
 %% up/downsample if necessary to allow integer periods
 period  = Fs/Freq;
 resample_flag = (period ~= int32(period));
@@ -23,7 +25,6 @@ end
 k       = (mean(xc.^2));
 
 %% create weights based on estimated autocorrelation
-
 idx     = (length(k)+1)/2;
 k       = k(idx-ceil(NumberPeriods/2):idx-1);
 k       = -(k./sum(k));
@@ -33,7 +34,18 @@ for h_idx = 1 : length(k)
     h = [h,k(h_idx),zeros(1,period-1)];
 end         
 h  = [z,1,fliplr(h)];
-h = (h+fliplr(h))./2;
+if strcmpi(symflag,'symmetric') 
+    h = (h+fliplr(h))./2;
+  
+elseif strcmpi(symflag,'left')
+    h = fliplr(h);
+    
+elseif strcmpi(symflag,'piecewise') || strcmpi(symflag,'causal') || strcmpi(symflag,'right')
+    % do nothing
+else
+    error('KERN:AUTO','Symflag not adequately specified')
+end
+
 L                   = 2*ceil(NumberPeriods)*(period); 
 while length(h) < L
     h = [0,h,0];

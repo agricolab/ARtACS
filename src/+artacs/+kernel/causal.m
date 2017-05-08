@@ -20,8 +20,8 @@ function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau,incflag,delay)
            
     % generate weighting function
     if nargin < 4
-        warning('KERN:WFUN','No weighting function defined. Using average');
-        wfun = 'ave';
+        warning('KERN:WFUN','No weighting function defined. Using uniform');
+        wfun = 'uniform';
     end
     
     if strcmpi(wfun,'linear')
@@ -40,7 +40,7 @@ function Kernel = causal(NumberPeriods,freq,Fs,wfun,tau,incflag,delay)
         if nargin < 5 || strcmpi(tau,'default'), tau = 1;  end        
         f                       = @(n,N)(1/pi)*(tau./((tau^2)-((N-n)./N)));
         w                       = @(n,N)f(n,N)./sum(f(1:N,N));
-    elseif strcmpi(wfun,'ave')        
+    elseif strcmpi(wfun,'ave') || strcmpi(wfun,'uniform') 
         tau                     = NaN;
         w                       = @(n,N)repmat(1/N,1,max(n));
     else

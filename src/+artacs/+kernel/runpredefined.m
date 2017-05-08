@@ -28,10 +28,6 @@ function [sig,pick] = addpad(sig,kernel)
     tmp         = fliplr(sig);
     tacs        = fliplr(mean(reshape(tmp(1:pincl*period),period,[]),2)');
     rightpad     = repmat(tacs,1,kernel.NumberPeriods*2);    
-    %L           = length(h)*4;    
-    %sig         = padarray(sig,[0,L],'replicate');
-    %pick        = L+1:length(sig)-L;
-    
     sig         = cat(2,leftpad,sig,rightpad);    
     pick        = (length(leftpad)+1) : (length(sig)-length(rightpad));
 end

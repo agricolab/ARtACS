@@ -1,31 +1,20 @@
-function Kernel = symmetric(NumberPeriods,freq,Fs,wfun,tau,dirflag,delay)
+function Kernel = symmetric(NumberPeriods,freq,Fs,wfun,tau,dirflag,Delay)
                  
+    if nargin < 4, wfun = 'ave'; end
+    if nargin < 5, tau = 'default'; end
+    if nargin < 6, dirflag = 'dec'; end
+    if nargin < 7, Delay = 0; end
+
+
     L                   = 2*ceil(NumberPeriods)*(Fs/freq);    
     NumberPeriods   	= (NumberPeriods./2);
     
-    if nargin > 3
-        if nargin > 4
-            if nargin > 5
-                if nargin > 6
-                    Kernel = artacs.kernel.causal(NumberPeriods,freq,Fs,wfun,tau,dirflag,delay);
-                else
-                    Kernel = artacs.kernel.causal(NumberPeriods,freq,Fs,wfun,tau,dirflag);
-                end
-            else
-                Kernel = artacs.kernel.causal(NumberPeriods,freq,Fs,wfun,tau);
-            end
-        else
-            Kernel = artacs.kernel.causal(NumberPeriods,freq,Fs,wfun);
-        end
-    else
-        Kernel = artacs.kernel.causal(NumberPeriods,freq,Fs);   
-    end
-    kernel = Kernel.h;
-    kernel = (kernel+fliplr(kernel))./2;
+    Kernel      = artacs.kernel.causal(NumberPeriods,freq,Fs,wfun,tau,dirflag,Delay);    
+    h           = (Kernel.h+fliplr(Kernel.h))./2;
     
-    while length(kernel) < L
-        kernel = [0,kernel,0];
+    while length(h) < L
+        h = [0,h,0];
     end
     
-    Kernel.h     = kernel;
+    Kernel.h     = h;
 end

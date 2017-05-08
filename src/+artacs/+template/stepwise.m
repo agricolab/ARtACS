@@ -1,4 +1,4 @@
-function filt_sig = compremoval(Signal,Freq,Fs)    
+function filt_sig = stepwise(Signal,Freq,Fs)    
 %% up/downsample if necessary to allow integer periods
 period  = Fs/Freq;
 resample_flag = (period ~= int32(period));
