@@ -9,8 +9,8 @@ printfolder = '.\docs\img\';
 datafolder = '.\dev\data\ecg\';
 %%
 D = dir([datafolder,'*.vhdr']);
-trange = 2000;
-
+trange = 4000;
+%% Load stim-free data
 cfg                         = [];
 cfg.trialfun                = 'ft_trialfun_general';
 cfg.dataset                 = [datafolder,'clean.vhdr'];
@@ -34,9 +34,7 @@ tru  = [];
 for hp_idx = 1 : length(HeartPeaks)  
     toi = int32(HeartPeaks(hp_idx,1));
     toi = (toi-trange):(toi+trange);
-    if min(toi)<0 || max(toi)>length(ECG), continue; end
-    
-  %  tmp = ECG(coi,toi)-mean(ECG(coi,toi));    
+    if min(toi)<0 || max(toi)>length(ECG), continue; end   
     
     % bipolar
     tmp = ECG(3,toi)-ECG(2,toi);
@@ -44,13 +42,19 @@ for hp_idx = 1 : length(HeartPeaks)
     tmp = tmp-mean(tmp);
     tru = cat(1,tru,tmp);
 end
+%% Run across the three stimulation data sets
 
+dataset_names   = {'10Hz.vhdr','10Hz3ma.vhdr','11Hz.vhdr'};
+dataset_freq    = [10,10,11];
+close all
+for dset_idx = 1 : length(dataset_names)
 %
 cfg                         = [];
 cfg.trialfun                = 'ft_trialfun_general';
-cfg.dataset                 = [datafolder,'10Hz.vhdr'];
+%cfg.dataset                 = [datafolder,'10Hz.vhdr'];
 %cfg.dataset                 = [datafolder,'10Hz3ma.vhdr'];
-cfg.dataset                 = [datafolder,'11Hz.vhdr'];
+%cfg.dataset                 = [datafolder,'11Hz.vhdr'];
+cfg.dataset                 = [datafolder,dataset_names{dset_idx}];
 cfg.trialdef.triallength    = Inf;
 cfg                         = ft_definetrial(cfg);
 data                        = ft_preprocessing(cfg);
@@ -91,13 +95,12 @@ filt_axis       = {'Causal Uniform','Causal Linear','Causal Exponential','Causal
 filt_type       = {'ave','linear','exp','gauss','automatic','ave','linear','exp','gauss','automatic','ave','linear','exp','gauss','automatic'};
 sym_type        = {'causal','causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric','symmetric','piecewise','piecewise','piecewise','piecewise','piecewise'};
 inc_type        = {'dec','dec','dec','dec','dec','inc','inc','inc','inc','inc','dec','dec','dec','dec','dec'};
-%inc_type        = {'dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec'};
 Delay           = [0 0 0 0 0,5 5 5 5 5,0 0 0 0 0];
-%Delay           = [0 0 0 0 0,0 0 0 0 0,0 0 0 0 0];
 Latency         = trange+1;
 NumberPeriods   = 10;
 %tacsFreq        = 10;
-tacsFreq        = 11;
+%tacsFreq        = 11;
+tacsFreq        = dataset_freq(dset_idx);
 Fs              = 1000;
 
 toi             = trange-250:trange+251;
@@ -110,15 +113,17 @@ F               = [];
 H = [];
 for trl_idx = 1 : size(trl,1)
     r = trl(trl_idx,:);
-    for fidx = 1 : length(filt_type)   
-        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',inc_type{fidx},Delay(fidx),Latency);  
-
+    for fidx = 1 : length(filt_type)         
+        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',inc_type{fidx},Delay(fidx),Latency);          
         recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
         R(fidx,trl_idx)   = recover;   
         F(fidx,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
+        
     end
-    
-    f                   = artacs.dft.local(r,tacsFreq,Fs,NumberPeriods);                
+    freqharm            = [1:4]*tacsFreq;
+    f                   = artacs.dft.local(r,freqharm,Fs,NumberPeriods);
+    %f                   = artacs.dft.local(r,tacsFreq,Fs,NumberPeriods);                
+          
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
     R(fidx+1,trl_idx)   = recover;
     F(fidx+1,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
@@ -127,17 +132,16 @@ for trl_idx = 1 : size(trl,1)
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
     R(fidx+2,trl_idx)   = recover;
     F(fidx+2,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
-    
+   
     f                   = tru(datasample(1:size(tru,1),1),:);
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
     R(fidx+3,trl_idx)   = recover;
     F(fidx+3,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
-    fprintf(')
 end
-%%
-%Efun      = @(x,prm)median(x,prm);
-Efun      = @(x,prm)mean(x,prm);
-close all
+%
+%Efun      = @(x,prm)nanmedian(x,prm);
+Efun      = @(x,prm)nanmean(x,prm);
+
 figure
 set(gcf,'Position',[100 100 1200 1000],'paperpositionmode','auto')
 count = 0;
@@ -159,6 +163,41 @@ for fidx = 1:size(F,1)
 end
 h = legend([h1,h2],'Stim-free Comparison','Artifact Removed');
 set(h,'position',[0.7 .15 .08 .08])
+
+%
+
+figure
+set(gcf,'Position',[100 100 1200 1000],'paperpositionmode','auto')
+count = 0;
+foi = 1:0.1:45;
+foitoi = trange-1000:trange+1000;
+for fidx = 1:size(F,1)
+    count = count+1;
+    subplot(4,5,count)
+    hold on
+               
+    pxx = pwelch(Efun(squeeze(F(end,:,foitoi)),1),1000,500,foi,1000);
+    h1 = plot(foi,20*log10(pxx),'linewidth',1,'color',[0.8500 0.3250 0.0980]);
+    if fidx ~= 18                
+        pxx = pwelch(squeeze(Efun(F(fidx,:,foitoi),2)),1000,500,foi,1000);
+        h2 = plot(foi,20*log10(pxx),'linewidth',2,'color',[0 0.4470  0.7410]);
+    end
+    set(gca,'ylim',[-100 0],'ytick',[-100:20:0])
+    set(gca,'xlim',[foi(1)-1,foi(end)],'xtick',[0,foi(91:100:end)])
+    title(filt_axis{fidx})   
+end
+h = legend([h1,h2],'Stim-free Comparison','Artifact Removed');
+set(h,'position',[0.7 .15 .08 .08])
+
+
+
+
+
+
+
+
+end
+%% Finish with 11 Hz, save some figures
 %%
 %Efun      = @(x,prm)median(x,prm);
 Efun      = @(x,prm)mean(x,prm);

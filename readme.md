@@ -19,18 +19,16 @@ Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but 
 
 By default, the kernel is symmetric and weights are based empirically on the artifacts periodic autocorrelation.
 
-Piecewise filtering splits the signal in half (or at a specified latency), filters the left half forward and the right half backwards, and fuses the signal again. Comb filters can cause echos (see causal uniform filter). Piecewise filtering can help to reduce the echo of an ERP in the filtered signal if the ERP latency is known (within roughly half the artifacts period).
-
 ```matlab
 % Add package to path
 addpath('.\src\')
 
 % Run a kernel filter, with automatic weights as default
 % based on 10 neighbouring periods
-% filter a frequency of 10 Hz
+% filter a frequency of 11 Hz
 % for a signal recorded at 1000 Hz
 NumberPeriods   = 10;
-Freq            = 10;
+Freq            = 11;
 Fs              = 1000;
 filtered_signal = artacs.kernel.run(Signal,Freq,NumberPeriods,Fs)
 
@@ -39,14 +37,18 @@ filtered_signal = artacs.kernel.run(Signal,Freq,NumberPeriods,Fs)
 wfun            = 'uniform'; % wfun can be 'uniform', 'linear', 'exp', 'gauss', 'automatic'
 symflag         = 'symmetric'; % symflag  can be 'causal', 'symmetric', 'right', or 'piecewise'.
 filtered_signal = artacs.kernel.run(Signal,Freq,NumberPeriods,Fs,symflag,wfun)
-
+```
+Piecewise filtering splits the signal in half (or at a specified latency), filters the left half forward and the right half backwards, and fuses the signal again. Comb filters can cause echos (see causal uniform filter). Piecewise filtering can help to reduce the echo of an ERP in the filtered signal if the ERP latency is known (within roughly half the artifacts period).
+```matlab
+filtered_signal = artacs.kernel.run(Signal,Freq,NumberPeriods,Fs,'piecewise','gauss')
 ```
 
 
 #### Template Based (Adaptive PCA)
 Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Estimates the time-course of artifact amplitude modulation across periods, and removes its prinical components  until artifact power is suppressed below the level of neighbouring frequencies. Works only for integer frequencies.
 ```matlab
-% based on adaptive stepwise removal of prinicipal components of the artifact amplitude modulation
+% based on adaptive stepwise removal of prinicipal components
+% of the artifact amplitude modulation.
 filtered_signal = artacs.template.stepwise(Signal,Freq,Fs)
 ```
 
@@ -55,7 +57,11 @@ Artifact is assummed to be _sinusoidal_, and _periodic_, but can be _non-station
 ```matlab
 % based on adaptive local dft
 filtered_signal = artacs.dft.local(Signal,Freq,Fs,NumberPeriods)
-% based on fft/ifft using the complete trial duration
+
+% filter harmonics by using a vector for Freq
+filtered_signal = artacs.dft.local(Signal,[1:4]*Freq,Fs,NumberPeriods)
+
+% use fft/ifft on the complete trial duration
 filtered_signal = artacs.dft.complete(Signal,Freq,Fs)
 ```
 

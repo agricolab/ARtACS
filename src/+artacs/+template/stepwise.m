@@ -1,3 +1,8 @@
+% PeriodResolution sets the resolution of seed periods to prevent corner artifacts in Percent.
+% Defaults to five 'randomly' selected periods
+% PeriodResolution = 'random';
+% PeriodResolution = 10 -> 10 percent steps from 1 to period length
+% PeriodResolution = 1 -> 1 percent steps from 1 to period length
 function FilteredSignal = stepwise(Signal,Freq,Fs,PeriodResolution)    
 %% up/downsample if necessary to allow integer periods
 period          = Fs/Freq;
