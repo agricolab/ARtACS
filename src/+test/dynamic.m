@@ -14,10 +14,10 @@ Tau                 = {1,4,100,'default'};
 if strcmpi(how_flag,'random')   
     fprintf(1,'[')
     for rep = 1 : 100
-        setup                   = generate.generic();
-        setup.tacsFreq          = tacsFreq(datasample(1:length(tacsFreq),1));
-        setup.Fs                = Fs(datasample(1:length(Fs),1));
-        Signal                  = generate.recording(setup);
+        setup           = generate.generic();
+        setup.tacsFreq  = tacsFreq(datasample(1:length(tacsFreq),1));
+        setup.Fs        = Fs(datasample(1:length(Fs),1));
+        Signal          = generate.recording(setup);
 
         np              = NumberPeriods(datasample(1:length(NumberPeriods),1));
         st              = sym_types{datasample(1:length(sym_types),1)};
@@ -27,11 +27,10 @@ if strcmpi(how_flag,'random')
         lt              = ceil(length(Signal)./2);
         ta              = Tau{datasample(1:length(Tau),1)};
 
-
-        f1               = artacs.kernel.run(Signal,np,setup.tacsFreq,setup.Fs,st,ft,ta,it,dl,lt);     
-        f2               = artacs.template.stepwise(Signal,setup.tacsFreq,setup.Fs);     
-        f3               = artacs.dft.local(Signal,setup.tacsFreq,setup.Fs,np);     
-        f4               = artacs.dft.complete(Signal,setup.tacsFreq,setup.Fs);     
+        f1              = artacs.kernel.run(Signal,np,setup.tacsFreq,setup.Fs,st,ft,ta,it,dl,lt);     
+        f2              = artacs.template.stepwise(Signal,setup.tacsFreq,setup.Fs);     
+        f3              = artacs.dft.local(Signal,setup.tacsFreq,setup.Fs,np);     
+        f4              = artacs.dft.complete(Signal,setup.tacsFreq,setup.Fs);     
         
         %plot(f)
         fprintf(1,'.')
@@ -43,7 +42,8 @@ end
 %% full test ~ 2 hours
 if strcmpi(how_flag,'full')
     fprintf(1,'Test will run roughly 1-2 hours')
-    %L = length(filt_types)*length(sym_types)*length(inc_types)*length(Delay)*length(NumberPeriods)*length(tacsFreq)*length(Fs)*length(Tau);
+    L = length(filt_types)*length(sym_types)*length(inc_types)*length(Delay)*length(NumberPeriods)*length(tacsFreq)*length(Fs)*length(Tau);
+    cnt  = 0;
     %(L * 0.05)/3600
     for ft_idx = 1 : length(filt_types)
         for st_idx = 1 : length(sym_types)
@@ -53,8 +53,7 @@ if strcmpi(how_flag,'full')
                         for tf_idx = 1 : length(tacsFreq)
                             for fs_idx = 1 : length(Fs)
                                 for ta_idx = 1 : length(Tau)                           
-                                    % generate a signal
-                                    tic
+                                    % generate a signal                                    
                                     setup           = generate.generic();
                                     setup.tacsFreq  = tacsFreq(tf_idx);
                                     setup.Fs        = Fs(fs_idx);
@@ -76,7 +75,8 @@ if strcmpi(how_flag,'full')
                                     f2               = artacs.template.stepwise(Signal,setup.tacsFreq,setup.Fs);     
                                     f3               = artacs.dft.local(Signal,setup.tacsFreq,setup.Fs,np);     
                                     f4               = artacs.dft.complete(Signal,setup.tacsFreq,setup.Fs);       
-                                    toc
+                                    cnt = cnt+1;
+                                    fprintf(1,'%2.0f of %2.0f\n',cnt,L)
                                 end
                             end
                         end

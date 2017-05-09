@@ -111,7 +111,7 @@ H = [];
 for trl_idx = 1 : size(trl,1)
     r = trl(trl_idx,:);
     for fidx = 1 : length(filt_type)   
-        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',inc_type{fidx},Delay(fidx),Latency);                                     
+        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',Latency,Delay(fidx),inc_type{fidx});  
 
         recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
         R(fidx,trl_idx)   = recover;   

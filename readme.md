@@ -9,15 +9,17 @@ This research is supported by the [BMBF: FKZ 13GW0119](https://www.medizintechno
 |:----:|:----:|
 | _Recover the ECG_<br>(which is ~120dB weaker than tACS) |<img src="docs\img\eva\ecg_raw.png" width= "400">|
 #### Performance
-<img src="docs\img\eva\ecg_performance.png" width = "1000">
-
+|<img src="docs\img\eva\ecg_performance.png">|
+|:----:|
+|<img src = "./docs/img/eva/recovery_ecg.png">|
+|_Recovery (as R² between filtered and stim-free ECG) for various filtering approaches_|
 
 #### Weighted Comb Filter
 Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Comb filters natively support only frequencies which are integer divisibles of the sampling frequency. When artacs.kernel.run is used, the signal is automatically resampled, to circumvent this limitation. Note that the method still requires integer frequencies.
 
 By default, the kernel is symmetric and weights are based empirically on the artifacts periodic autocorrelation.
 
-Piecewise filtering splits the signal in half (or at a specified latency), filters the left half forward and the right half backwards, and fuses the signal again. This can help to reduce the echo of an ERP in the filtered signal.
+Piecewise filtering splits the signal in half (or at a specified latency), filters the left half forward and the right half backwards, and fuses the signal again. Comb filters can cause echos (see causal uniform filter). Piecewise filtering can help to reduce the echo of an ERP in the filtered signal if the ERP latency is known (within roughly half the artifacts period).
 
 ```matlab
 % Add package to path
@@ -52,13 +54,10 @@ filtered_signal = artacs.template.stepwise(Signal,Freq,Fs)
 Artifact is assummed to be _sinusoidal_, and _periodic_, but can be _non-stationary_. The sinusoidal artifacts amplitude is estimated either _local_ (i.e. for the past _NumberPeriods_ periods) or for the _complete_ signal duration and removed. Works natively for any real frequency.
 ```matlab
 % based on adaptive local dft
-filtered_signal = artacs.dft.local(signal,freq,Fs,NumberPeriods)
+filtered_signal = artacs.dft.local(Signal,Freq,Fs,NumberPeriods)
 % based on fft/ifft using the complete trial duration
-filtered_signal = artacs.dft.complete(signal,freq,Fs)
+filtered_signal = artacs.dft.complete(Signal,Freq,Fs)
 ```
-
-<img src = "./docs/img/eva/recovery_ecg.png">
-Recovery (R²) of an ECG for a variety of filtering approaches
 
 ###### More information:
 [On creating simulated signals](generate.md)
