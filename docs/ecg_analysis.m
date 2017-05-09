@@ -9,7 +9,7 @@ printfolder = '.\docs\img\';
 datafolder = '.\dev\data\ecg\';
 %%
 D = dir([datafolder,'*.vhdr']);
-trange = 3000;
+trange = 2000;
 
 cfg                         = [];
 cfg.trialfun                = 'ft_trialfun_general';
@@ -44,9 +44,7 @@ for hp_idx = 1 : length(HeartPeaks)
     tmp = tmp-mean(tmp);
     tru = cat(1,tru,tmp);
 end
-close all
-figure
-plot(mean(-tru,1))
+
 %
 cfg                         = [];
 cfg.trialfun                = 'ft_trialfun_general';
@@ -89,11 +87,13 @@ fprintf(1,'Finished\n')
 filt_axis       = {'Causal Uniform','Causal Linear','Causal Exponential','Causal Gaussian','Causal Automatic',...
                     'Symmetric Uniform','Symmetric Linear','Symmetric Exponential','Symmetric Gaussian','Symmetric Automatic',...
                     'Piecewise Uniform','Piecewise  Linear','Piecewise  Exponential','Piecewise Gaussian','Piecewise Automatic',...
-                    'Adaptive DFT','Adaptive PCA','Comparison Bootstrap'};
+                    'Adaptive DFT','Adaptive PCA','Stim-free Bootstrap'};
 filt_type       = {'ave','linear','exp','gauss','automatic','ave','linear','exp','gauss','automatic','ave','linear','exp','gauss','automatic'};
 sym_type        = {'causal','causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric','symmetric','piecewise','piecewise','piecewise','piecewise','piecewise'};
 inc_type        = {'dec','dec','dec','dec','dec','inc','inc','inc','inc','inc','dec','dec','dec','dec','dec'};
+%inc_type        = {'dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec','dec'};
 Delay           = [0 0 0 0 0,5 5 5 5 5,0 0 0 0 0];
+%Delay           = [0 0 0 0 0,0 0 0 0 0,0 0 0 0 0];
 Latency         = trange+1;
 NumberPeriods   = 10;
 %tacsFreq        = 10;
@@ -111,7 +111,7 @@ H = [];
 for trl_idx = 1 : size(trl,1)
     r = trl(trl_idx,:);
     for fidx = 1 : length(filt_type)   
-        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',Latency,Delay(fidx),inc_type{fidx});  
+        f               = artacs.kernel.run(r,NumberPeriods,tacsFreq,Fs,sym_type{fidx},filt_type{fidx},'default',inc_type{fidx},Delay(fidx),Latency);  
 
         recover         = corr(f(toi)',e(1,toi)');     % true signal -> erp
         R(fidx,trl_idx)   = recover;   
@@ -123,7 +123,7 @@ for trl_idx = 1 : size(trl,1)
     R(fidx+1,trl_idx)   = recover;
     F(fidx+1,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
     
-    f                   = artacs.template.stepwise(r,tacsFreq,Fs);
+    f                   = artacs.template.stepwise(r,tacsFreq,Fs,'random');
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
     R(fidx+2,trl_idx)   = recover;
     F(fidx+2,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
@@ -132,24 +132,33 @@ for trl_idx = 1 : size(trl,1)
     recover             = corr(f(toi)',e(1,toi)');    % true signal -> erp
     R(fidx+3,trl_idx)   = recover;
     F(fidx+3,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
-    
+    fprintf(')
 end
 %%
 %Efun      = @(x,prm)median(x,prm);
 Efun      = @(x,prm)mean(x,prm);
 close all
 figure
-set(gcf,'Position',[100 100 1200 900],'paperpositionmode','auto')
-for fidx = 1 : size(F,1)
-    subplot(4,5,fidx)
-    hold on    
-    plot(Efun(tru(:,toi),1)')    
-    plot(squeeze(Efun((utils.baseline(squeeze(F(fidx,:,toi)),1:200,1)'),2))')    
-    set(gca,'ylim',[-12 17])
+set(gcf,'Position',[100 100 1200 1000],'paperpositionmode','auto')
+count = 0;
+for fidx = 1:size(F,1)
+    count = count+1;
+    subplot(4,5,count)
+    hold on
+    
+    [h,p,ci] = ttest(squeeze(F(end,:,toi)));                
+    h3 = patch([1:length(ci),length(ci):-1:1],[ci(1,:),fliplr(ci(2,:))],ones(1,length(ci)*2),'facecolor',[0.8500 0.3250 0.0980],'facealpha',0.25,'edgecolor',[0.8500 0.3250 0.0980],'edgealpha',0.1);                
+    h1 = plot(mean(ci),'linewidth',1,'color',[0.8500 0.3250 0.0980]);
+    if fidx ~= 18        
+        %h1 = plot(Efun(tru(:,toi),1),'linewidth',2,'color',[0.8500 0.3250 0.0980]);
+        h2 = plot(squeeze(Efun(F(fidx,:,toi),2))','linewidth',2,'color',[0 0.4470  0.7410]);
+    end
+    set(gca,'xlim',[1 length(toi)],'xtick',[1:100:4000],'xticklabel',[(-length(toi)/2+1):100:length(toi)/2])
+    set(gca,'ylim',[-20 20],'ytick',[-1000:10:1000])
     title(filt_axis{fidx})   
 end
-h = legend('Without tacs','With Artifact Removed');
-set(h,'position',[0.05 .85 .08 .08])
+h = legend([h1,h2],'Stim-free Comparison','Artifact Removed');
+set(h,'position',[0.7 .15 .08 .08])
 %%
 %Efun      = @(x,prm)median(x,prm);
 Efun      = @(x,prm)mean(x,prm);
@@ -173,11 +182,12 @@ for fidx = [4,6,14,10,16,17]
     set(gca,'ylim',[-20 20],'ytick',[-1000:10:1000])
     title(filt_axis{fidx})   
 end
-h = legend([h1,h2],'Stim-free Comparison','Artifact Removed','95% CI');
+h = legend([h1,h2],'Stim-free Comparison','Artifact Removed');
 set(h,'position',[0.08 .84 .08 .08])
 print(gcf,[printfolder,'eva\ecg_performance.png'],'-dpng')
 %%
-smpl_num    = 200;
+clc
+smpl_num    = 100;
 koi = 0:0.01:1;
 KxR = [];
 KxA = [];
@@ -233,11 +243,11 @@ snr_dB  = 20*log(a_pwr/s_pwr)
 
 a_pwr   = max(range(trl(:,toi),2));
 s_pwr   = min(range(tru(:,toi),2));
-snr_dB  = 20*log(a_pwr/s_pwr)
+snr_dB  = 20*log(a_pwr/s_pwr);
 
 a_pwr   = min(range(trl(:,toi),2));
 s_pwr   = max(range(tru(:,toi),2));
-snr_dB  = 20*log(a_pwr/s_pwr)
+snr_dB  = 20*log(a_pwr/s_pwr);
 
 %%
 tit_set     = {'Symmetric Gaussian','Causal Uniform','Adaptive DFT'};

@@ -1,4 +1,4 @@
-function FilteredSignal = stepwise(Signal,Freq,Fs)    
+function FilteredSignal = stepwise(Signal,Freq,Fs,PeriodResolution)    
 %% up/downsample if necessary to allow integer periods
 period          = Fs/Freq;
 resample_flag   = (period ~= int32(period));
@@ -10,12 +10,41 @@ if resample_flag %upsample signal to make period length an integer
     Fs          = period*Freq;
     Signal      = resample(Signal,Fs,trueFs);        
 end
+InitSignal  = Signal;
 
+% Select Period Starting Seeds
+if nargin < 4, PeriodResolution = 'random'; end
+if strcmpi(PeriodResolution,'default') 
+    %PeriodResolution = 100;
+    PeriodResolution = 'random';
+end
+
+if strcmpi(PeriodResolution,'random')
+    P           = period:-1:1;
+    rng('shuffle');
+    P           = datasample(P,5);
+    
+elseif isnumeric(PeriodResolution)
+    if PeriodResolution > 100, PeriodResolution  = 100; end
+    PeriodResolution = ceil(PeriodResolution*period/100);
+    P           = period:-1:1;
+    P           = P(fix(1:PeriodResolution:end));
+    if isempty(P), P = 1; end
+
+end
+
+
+F           =  [];
+for PeriodShift = P
+
+Signal              = InitSignal(PeriodShift:end-PeriodShift+1);
 % remove components until artifact power is as low as neighbouring frequencies
 ArtifactPower       = calcpower(Signal,Freq,Fs);
 BlockSignal         = signal2period(Signal,period);
 
+IterNum     = 0;
 while ArtifactPower > 1
+    IterNum     = IterNum + 1;
     BlockSignal         = removetemplate(BlockSignal);
     ReconstructedSignal = period2signal(BlockSignal);
     ArtifactPower       = calcpower(ReconstructedSignal,Freq,Fs);
@@ -23,8 +52,15 @@ end
 
 % reshape, append and detrend
 FilteredSignal = period2signal(BlockSignal);
-
-while length(FilteredSignal) < length(Signal)
+FilteredSignal = [NaN(1,PeriodShift-1),FilteredSignal,NaN(1,PeriodShift-1)];
+while length(FilteredSignal) < length(InitSignal)
+    FilteredSignal = cat(2,FilteredSignal,0);
+end
+F              = cat(1,F,FilteredSignal);
+end
+FilteredSignal = nanmean(F,1);
+%%%
+while length(FilteredSignal) < length(InitSignal)
     FilteredSignal = cat(2,FilteredSignal,0);
 end
 
@@ -33,7 +69,11 @@ if resample_flag
 end
 FilteredSignal = FilteredSignal(1:trueL);
 
+%fprintf('Ran for %2.0f Iterations\n',IterNum)
+
 end
+
+
 %%
 % remove first component of artifact modulation across periods
 function BlockSignal = removetemplate(BlockSignal)
