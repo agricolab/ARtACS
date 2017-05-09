@@ -1,55 +1,69 @@
-function filt_sig = stepwise(Signal,Freq,Fs)    
+function FilteredSignal = stepwise(Signal,Freq,Fs)    
 %% up/downsample if necessary to allow integer periods
-period  = Fs/Freq;
-resample_flag = (period ~= int32(period));
-trueSig     = Signal;
-trueFs      = Fs;          
-if resample_flag
+period          = Fs/Freq;
+resample_flag   = (period ~= int32(period));
+trueL           = length(Signal);
+trueFs          = Fs;          
+
+if resample_flag %upsample signal to make period length an integer
     period      = ceil(period);
     Fs          = period*Freq;
-    %upsample signal to match period with kernel
-    Signal         = resample(trueSig,Fs,trueFs);        
+    Signal      = resample(Signal,Fs,trueFs);        
 end
-%% cut into period length epochs and estimate autocorrelation
-pincl       = floor(length(Signal)./period);
-tmp_sig     = Signal(1:pincl*period);
-SS = [];
-for phase_idx = 1 : period
-    SS = cat(1,SS,tmp_sig(phase_idx:period:end));   
-end
-%% remove from signal
-[c,s]           = pca(SS);
-filt_sig        = SS;
-artifact_idx    = round(Freq/Fs*length(tmp_sig)) + 1;
-physio_idx1      = round((Freq-2)/Fs*length(tmp_sig)) + 1;
-physio_idx2      = round((Freq+2)/Fs*length(tmp_sig)) + 1;
-ffx             = fft(reshape(filt_sig,1,[]));
-ArtifactPower   = abs(ffx(artifact_idx))./median(abs(ffx(physio_idx1:physio_idx2)));
 
 % remove components until artifact power is as low as neighbouring frequencies
-comp_idx = 0;
+ArtifactPower       = calcpower(Signal,Freq,Fs);
+BlockSignal         = signal2period(Signal,period);
+
 while ArtifactPower > 1
-    
-    comp_idx        = comp_idx + 1;
-	removeSignal    = c(:,comp_idx)*s(:,comp_idx)';
-    filt_sig        = filt_sig-removeSignal';
-    
-    ffx             = fft(reshape(filt_sig,1,[]));
-    ArtifactPower   = abs(ffx(artifact_idx))./median(abs(ffx(physio_idx1:physio_idx2)));
+    BlockSignal         = removetemplate(BlockSignal);
+    ReconstructedSignal = period2signal(BlockSignal);
+    ArtifactPower       = calcpower(ReconstructedSignal,Freq,Fs);
 end
 
-%% 
-filt_sig  = reshape(filt_sig,1,[]);
+% reshape, append and detrend
+FilteredSignal = period2signal(BlockSignal);
 
-while length(filt_sig) < length(Signal)
-    filt_sig = cat(2,filt_sig,0);
+while length(FilteredSignal) < length(Signal)
+    FilteredSignal = cat(2,FilteredSignal,0);
 end
 
 if resample_flag
-    filt_sig = resample(filt_sig,trueFs,Fs);
+    FilteredSignal = resample(FilteredSignal,trueFs,Fs);
+end
+FilteredSignal = FilteredSignal(1:trueL);
+
+end
+%%
+% remove first component of artifact modulation across periods
+function BlockSignal = removetemplate(BlockSignal)
+    [c,s]               = pca(BlockSignal);
+    RemoveSignal        = c(:,1)*s(:,1)';
+    BlockSignal         = BlockSignal-RemoveSignal';    
 end
 
-filt_sig = filt_sig(1:length(trueSig));
 
-filt_sig =detrend(filt_sig);
+% cut into period length epochs and estimate autocorrelatio
+function [BlockSignal] = signal2period(Signal,period)
+
+pincl       = floor(length(Signal)./period);
+tmp_sig     = Signal(1:pincl*period);
+BlockSignal = [];
+for phase_idx = 1 : period
+    BlockSignal = cat(1,BlockSignal,tmp_sig(phase_idx:period:end));   
+end
+end
+
+% cut into period length epochs and estimate autocorrelation
+function ReconstructedSignal = period2signal(BlockSignal)
+    ReconstructedSignal         = reshape(BlockSignal,1,[]);
+end
+
+function ArtifactPower = calcpower(Signal,Freq,Fs)
+    L               = length(Signal);
+    artifact_idx    = round(Freq/Fs*L) + 1;
+    physio_idx1     = round((Freq-2)/Fs*L) + 1;
+    physio_idx2     = round((Freq+2)/Fs*L) + 1;
+    ffx             = fft(Signal);
+    ArtifactPower   = abs(ffx(artifact_idx))./median(abs(ffx(physio_idx1:physio_idx2)));    
 end
