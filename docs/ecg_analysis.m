@@ -95,7 +95,9 @@ filt_axis       = {'Causal Uniform','Causal Linear','Causal Exponential','Causal
 filt_type       = {'ave','linear','exp','gauss','automatic','ave','linear','exp','gauss','automatic','ave','linear','exp','gauss','automatic'};
 sym_type        = {'causal','causal','causal','causal','causal','symmetric','symmetric','symmetric','symmetric','symmetric','piecewise','piecewise','piecewise','piecewise','piecewise'};
 inc_type        = {'dec','dec','dec','dec','dec','inc','inc','inc','inc','inc','dec','dec','dec','dec','dec'};
+%inc_type        = {'dec','dec','dec','dec','dec','inc','inc','inc','inc','inc','inc','inc','inc','inc','inc'};
 Delay           = [0 0 0 0 0,5 5 5 5 5,0 0 0 0 0];
+%Delay           = [0 0 0 0 0,0 0 0 0 0,5 5 5 5 5];
 Latency         = trange+1;
 NumberPeriods   = 10;
 %tacsFreq        = 10;
@@ -139,20 +141,22 @@ for trl_idx = 1 : size(trl,1)
     F(fidx+3,trl_idx,:) = utils.baseline(f,trange-500:trange-100,1);
 end
 %
-%Efun      = @(x,prm)nanmedian(x,prm);
-Efun      = @(x,prm)nanmean(x,prm);
+if ismember(dset_idx,[1,2])
+    Efun      = @(x,prm)nanmedian(x,prm);
+else
+    Efun      = @(x,prm)nanmean(x,prm);
+end
 
 figure
 set(gcf,'Position',[100 100 1200 1000],'paperpositionmode','auto')
-count = 0;
-for fidx = 1:size(F,1)
-    count = count+1;
-    subplot(4,5,count)
+%ci = cat(1,quantile(squeeze(F(end,:,toi)),0.95),quantile(squeeze(F(end,:,toi)),0.05));
+[h,p,ci] = ttest(squeeze(F(end,:,toi)));
+for fidx = 1:size(F,1)    
+    subplot(4,5,fidx)
     hold on
-    
-    [h,p,ci] = ttest(squeeze(F(end,:,toi)));                
+        
     h3 = patch([1:length(ci),length(ci):-1:1],[ci(1,:),fliplr(ci(2,:))],ones(1,length(ci)*2),'facecolor',[0.8500 0.3250 0.0980],'facealpha',0.25,'edgecolor',[0.8500 0.3250 0.0980],'edgealpha',0.1);                
-    h1 = plot(mean(ci),'linewidth',1,'color',[0.8500 0.3250 0.0980]);
+    h1 = plot(Efun(squeeze(F(end,:,toi)),1),'linewidth',1,'color',[0.8500 0.3250 0.0980]);
     if fidx ~= 18        
         %h1 = plot(Efun(tru(:,toi),1),'linewidth',2,'color',[0.8500 0.3250 0.0980]);
         h2 = plot(squeeze(Efun(F(fidx,:,toi),2))','linewidth',2,'color',[0 0.4470  0.7410]);
@@ -163,32 +167,45 @@ for fidx = 1:size(F,1)
 end
 h = legend([h1,h2],'Stim-free Comparison','Artifact Removed');
 set(h,'position',[0.7 .15 .08 .08])
+printname = dataset_names{dset_idx}(1:regexp(dataset_names{dset_idx},'.vhdr')-1);
+print(gcf,[printfolder,'eva\ecg_TD_',printname,'.png'],'-dpng')
 
 %
+foi = 1:0.1:45;
+PXX = [];
+for fidx = 1:size(F,1)
+    for tidx = 1: size(F,2)
+        pxx = 20*log10(pwelch(squeeze(F(fidx,tidx,toi)),500,125,foi,1000));
+        PXX(fidx,tidx,:) = pxx;
+    end
+end
 
+[h,p,ci] = ttest(squeeze(PXX(end,:,:)));
+ci = cat(1,quantile(squeeze(PXX(end,:,:)),0.95),quantile(squeeze(PXX(end,:,:)),0.05));
 figure
 set(gcf,'Position',[100 100 1200 1000],'paperpositionmode','auto')
-count = 0;
-foi = 1:0.1:45;
-foitoi = trange-1000:trange+1000;
 for fidx = 1:size(F,1)
-    count = count+1;
-    subplot(4,5,count)
+    subplot(4,5,fidx)
     hold on
-               
-    pxx = pwelch(Efun(squeeze(F(end,:,foitoi)),1),1000,500,foi,1000);
-    h1 = plot(foi,20*log10(pxx),'linewidth',1,'color',[0.8500 0.3250 0.0980]);
+                   
+    h3 = patch([foi,fliplr(foi)],[ci(1,:),fliplr(ci(2,:))],ones(1,length(ci)*2),'facecolor',[0.8500 0.3250 0.0980],'facealpha',0.25,'edgecolor',[0.8500 0.3250 0.0980],'edgealpha',0.1);                
+    h1 = plot(foi,Efun(squeeze(PXX(end,:,:)),1),'linewidth',1,'color',[0.8500 0.3250 0.0980]);
+      
     if fidx ~= 18                
-        pxx = pwelch(squeeze(Efun(F(fidx,:,foitoi),2)),1000,500,foi,1000);
-        h2 = plot(foi,20*log10(pxx),'linewidth',2,'color',[0 0.4470  0.7410]);
+        [~,~,ci2] = ttest(squeeze(PXX(fidx,:,:)));
+        ci2 = cat(1,quantile(squeeze(PXX(fidx,:,:)),0.95),quantile(squeeze(PXX(fidx,:,:)),0.05));
+        pxx = Efun(squeeze(PXX(fidx,:,:)),1);        
+        h4 = patch([foi,fliplr(foi)],[ci2(1,:),fliplr(ci2(2,:))],ones(1,length(ci2)*2),'facecolor',[0 0.4470  0.7410],'facealpha',0.25,'edgecolor',[0 0.4470  0.7410],'edgealpha',0.1);                
+        h2  = plot(foi,pxx,'linewidth',2,'color',[0 0.4470  0.7410]);
     end
-    set(gca,'ylim',[-100 0],'ytick',[-100:20:0])
+    set(gca,'ylim',[-100 50],'ytick',[-100:25:50])
     set(gca,'xlim',[foi(1)-1,foi(end)],'xtick',[0,foi(91:100:end)])
     title(filt_axis{fidx})   
 end
 h = legend([h1,h2],'Stim-free Comparison','Artifact Removed');
 set(h,'position',[0.7 .15 .08 .08])
-
+printname = dataset_names{dset_idx}(1:regexp(dataset_names{dset_idx},'.vhdr')-1);
+print(gcf,[printfolder,'eva\ecg_Pxx_',printname,'.png'],'-dpng')
 
 
 

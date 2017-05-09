@@ -7,12 +7,7 @@ This research is supported by the [BMBF: FKZ 13GW0119](https://www.medizintechno
 #### Use Case
 | _Upper Limb Bipolar ECG recording_ <br> _during 11 Hz tACS_ |<img src="docs\img\div\upper_limb_ecg.jpg" width = "400">|
 |:----:|:----:|
-| _Recover the ECG_<br>(which is ~120dB weaker than tACS) |<img src="docs\img\eva\ecg_raw.png" width= "400">|
-#### Performance
-|<img src="docs\img\eva\ecg_performance.png">|
-|:----:|
-|<img src = "./docs/img/eva/recovery_ecg.png">|
-|_Recovery (as R² between filtered and stim-free ECG) for various filtering approaches_|
+|_Recover the ECG_<br>(which is ~120dB weaker than tACS) |<img src="docs\img\eva\ecg_raw.png" width= "400">|
 
 #### Weighted Comb Filter
 Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Comb filters natively support only frequencies which are integer divisibles of the sampling frequency. When artacs.kernel.run is used, the signal is automatically resampled, to circumvent this limitation. Note that the method still requires integer frequencies.
@@ -38,7 +33,7 @@ wfun            = 'uniform'; % wfun can be 'uniform', 'linear', 'exp', 'gauss', 
 symflag         = 'symmetric'; % symflag  can be 'causal', 'symmetric', 'right', or 'piecewise'.
 filtered_signal = artacs.kernel.run(Signal,Freq,NumberPeriods,Fs,symflag,wfun)
 ```
-Piecewise filtering splits the signal in half (or at a specified latency), filters the left half forward and the right half backwards, and fuses the signal again. Comb filters can cause echos (see causal uniform filter). Piecewise filtering can help to reduce the echo of an ERP in the filtered signal if the ERP latency is known (within roughly half the artifacts period).
+Piecewise filtering splits the signal in half (or at a specified latency), filters the left half forward and the right half backwards, and fuses the signal again. Comb filters can cause echos (see causal uniform filter). Piecewise filtering can help to reduce the echo of an ERP in the filtered signal if the ERP latency is known (within roughly half the artifacts period), especially when combined with
 ```matlab
 filtered_signal = artacs.kernel.run(Signal,Freq,NumberPeriods,Fs,'piecewise','gauss')
 ```
@@ -64,7 +59,13 @@ filtered_signal = artacs.dft.local(Signal,[1:4]*Freq,Fs,NumberPeriods)
 % use fft/ifft on the complete trial duration
 filtered_signal = artacs.dft.complete(Signal,Freq,Fs)
 ```
+#### Performance
 
+|<img src="docs\img\eva\ecg_TD_11Hz.png">|
+|:----:|
+|<img src="docs\img\eva\ecg_Pxx_11Hz.png">|
+|<img src = "./docs/img/eva/recovery_ecg.png">|
+|_Recovery (as R² between filtered and stim-free ECG) for various filtering approaches_|
 ###### More information:
 [On creating simulated signals](generate.md)
 
