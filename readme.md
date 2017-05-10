@@ -33,7 +33,7 @@ wfun            = 'uniform'; % wfun can be 'uniform', 'linear', 'exp', 'gauss', 
 symflag         = 'symmetric'; % symflag  can be 'causal', 'symmetric', 'right', or 'piecewise'.
 filtered_signal = artacs.kernel.run(Signal,Freq,NumberPeriods,Fs,symflag,wfun)
 ```
-Piecewise filtering splits the signal in half (or at a specified latency), filters the left half forward and the right half backwards, and fuses the signal again. Comb filters can cause echos (see causal uniform filter). Piecewise filtering can help to reduce the echo of an ERP in the filtered signal if the ERP latency is known (within roughly half the artifacts period), especially when combined with
+Piecewise filtering splits the signal in half (or at a specified latency), filters the left half forward and the right half backwards, and fuses the signal again. Comb filters can cause echos (see causal uniform filter). Piecewise filtering can help to reduce the echo of an ERP in the filtered signal if the ERP latency is known (within roughly half the artifacts period).
 ```matlab
 filtered_signal = artacs.kernel.run(Signal,Freq,NumberPeriods,Fs,'piecewise','gauss')
 ```

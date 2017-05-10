@@ -1,5 +1,8 @@
 ###### Signal Simulation
 I implemented the possibility to generate simulated signals for evaluation of the filters on realistic data.
+|<img src = "./img/exemplary_generic.png">|
+|:---:|
+| Exemplary simulated signal|
 ```matlab
 % you can create a signal with a generic configuration
 [signal,echt]  = generate.recording('generic')
