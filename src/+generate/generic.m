@@ -10,9 +10,9 @@ setup.eoPhase           = 'random';
 
 % tacs parameters
 setup.tacsFreq          = 10;
-setup.tacsMagnitude     = 2000;
+setup.tacsMagnitude     = 20000;
 setup.tacsSaturate      = Inf;
-setup.tacsDistort       = 0.01;
+setup.tacsDistort       = 0.001;
 setup.tacsPhase         = 'random';
 
 % level of random fluctuation of the artifcat amplitude.
