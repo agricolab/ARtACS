@@ -1,14 +1,7 @@
-|<img src="docs\img\eva\three_approaches_raw.png" width = "400"></th>|
-|:----:|
-| _Exemplary generic signal_|
-
 ###### Signal Simulation
 I implemented the possibility to generate simulated signals for evaluation of the filters on realistic data.
 ```matlab
-% you can create a random configuration
-[signal,echt]  = generate.recording('random')
-
-% or a generic one
+% you can create a signal with a generic configuration
 [signal,echt]  = generate.recording('generic')
 ```
 You can also adapt or define directly your own setup parameters:
