@@ -1,3 +1,4 @@
+%function Kernel = create(NumberPeriods,freq,Fs,symflag,wfun,tau,dirflag,Delay)%
 function Kernel = create(NumberPeriods,freq,Fs,symflag,wfun,tau,dirflag,Delay)
     
 if nargin < 5, wfun = 'ave'; end

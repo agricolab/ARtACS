@@ -42,6 +42,9 @@ elseif strcmpi(symflag,'left')
     
 elseif strcmpi(symflag,'piecewise') || strcmpi(symflag,'causal') || strcmpi(symflag,'right')
     % do nothing
+    
+    
+    
 else
     error('KERN:AUTO','Symflag not adequately specified')
 end

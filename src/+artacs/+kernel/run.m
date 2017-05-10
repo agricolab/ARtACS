@@ -1,3 +1,4 @@
+%function filt_sig = run(Signal,NumberPeriods,Freq,Fs,symflag,wfun,tau,dirflag,Delay,Latency)
 function filt_sig = run(Signal,NumberPeriods,Freq,Fs,symflag,wfun,tau,dirflag,Delay,Latency)
 
     if NumberPeriods == 0; filt_sig = Signal; return; end
