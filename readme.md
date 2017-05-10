@@ -5,9 +5,9 @@ Includes also code for artifact removal using ___adaptive DFT___ and ___adaptive
 This research is supported by the [BMBF: FKZ 13GW0119](https://www.medizintechnologie.de/fileadmin/pdfs/Projektsteckbriefe_bekanntmachungen/IndiMedtech/13GW0119_Projektsteckbrief_NEU.pdf).
 
 #### Use Case
-| _Upper Limb Bipolar ECG recording_ <br> _during 11 Hz tACS_ |<img src="docs\img\div\upper_limb_ecg.jpg" width = "400">|
+| _Upper Limb Bipolar ECG recording_ <br> _during 11 Hz tACS_ |<img src=".\img\upper_limb_ecg.jpg" width = "400">|
 |:----:|:----:|
-|_Recover the ECG_<br>(which is ~120dB weaker than tACS) |<img src="docs\img\eva\ecg_raw.png" width= "400">|
+|_Recover the ECG_<br>(which is ~120dB weaker than tACS) |<img src=".\img\ecg_raw.png" width= "400">|
 
 #### Weighted Comb Filter
 Filters the signal. Artifact can be _non-stationary_ and  _non-sinusoidal_, but is required to be _periodic_. Comb filters natively support only frequencies which are integer divisibles of the sampling frequency. When artacs.kernel.run is used, the signal is automatically resampled, to circumvent this limitation. Note that the method still requires integer frequencies.
@@ -60,11 +60,8 @@ filtered_signal = artacs.dft.local(Signal,[1:4]*Freq,Fs,NumberPeriods)
 filtered_signal = artacs.dft.complete(Signal,Freq,Fs)
 ```
 #### Performance
-
-|<img src="docs\img\eva\ecg_TD_11Hz.png">|
-|:----:|
-|<img src="docs\img\eva\ecg_Pxx_11Hz.png">|
-|<img src = "./docs/img/eva/recovery_ecg.png">|
+|<img src = "/img/recovery_ecg.png">|
+|:---:|
 |_Recovery (as R² between filtered and stim-free ECG) for various filtering approaches_|
 ###### More information:
 [On creating simulated signals](generate.md)
