@@ -1,5 +1,5 @@
-% function filt_sig = local(sig,freq,Fs,NumberPeriods)    
-function filt_sig = local(sig,freq,Fs,NumberPeriods)        
+% function filt_sig = causal(sig,freq,Fs,NumberPeriods)    
+function filt_sig = causal(sig,freq,Fs,NumberPeriods)        
     
     for freq_idx = 1 : length(freq)
         if freq_idx == 1
@@ -8,6 +8,7 @@ function filt_sig = local(sig,freq,Fs,NumberPeriods)
             filt_sig = runDFT(filt_sig,freq(freq_idx),Fs,NumberPeriods);    
         end
     end
+    
 end
 
 function [sig,pick] = addpad(sig,h)

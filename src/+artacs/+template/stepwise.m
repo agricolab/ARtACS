@@ -59,22 +59,18 @@ end
 FilteredSignal = period2signal(BlockSignal);
 FilteredSignal = [NaN(1,PeriodShift-1),FilteredSignal,NaN(1,PeriodShift-1)];
 while length(FilteredSignal) < length(InitSignal)
-    FilteredSignal = cat(2,FilteredSignal,0);
+    FilteredSignal = cat(2,FilteredSignal,NaN);
 end
 F              = cat(1,F,FilteredSignal);
 end
 FilteredSignal = nanmean(F,1);
-%%%
-while length(FilteredSignal) < length(InitSignal)
-    FilteredSignal = cat(2,FilteredSignal,0);
-end
+FilteredSignal = interp1(find(~isnan(FilteredSignal)),FilteredSignal(~isnan(FilteredSignal)),1:length(FilteredSignal),'linear','extrap');
 
 if resample_flag
     FilteredSignal = resample(FilteredSignal,trueFs,Fs);
 end
 FilteredSignal = FilteredSignal(1:trueL);
 
-%fprintf('Ran for %2.0f Iterations\n',IterNum)
 
 end
 

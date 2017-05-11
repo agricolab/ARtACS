@@ -1,6 +1,7 @@
 function eo = eventoscillation(setup)    
     z               = generate.onset(setup);
-    em              = (conv(z,hanning(setup.Fs/2)','same'));      
+    duration        = 4*(setup.Fs/setup.tacsFreq);
+    em              = (conv(z,hanning(duration)','same'));      
     if strcmpi(setup.eoPhase,'random')
         eoPhase = deg2rad(randi(360)); 
     else
