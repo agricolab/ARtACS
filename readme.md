@@ -50,11 +50,11 @@ filtered_signal = artacs.template.stepwise(Signal,Freq,Fs)
 #### Sinusoidal Filter (Adaptive DFT)
 Artifact is assummed to be _sinusoidal_, and _periodic_, but can be _non-stationary_. The sinusoidal artifacts amplitude is estimated either _local_ (i.e. for the past _NumberPeriods_ periods) or for the _complete_ signal duration and removed. Works natively for any real frequency.
 ```matlab
-% based on adaptive local dft
-filtered_signal = artacs.dft.local(Signal,Freq,Fs,NumberPeriods)
+% based on adaptive causal dft
+filtered_signal = artacs.dft.causal(Signal,Freq,Fs,NumberPeriods)
 
 % filter harmonics by using a vector for Freq
-filtered_signal = artacs.dft.local(Signal,[1:4]*Freq,Fs,NumberPeriods)
+filtered_signal = artacs.dft.causal(Signal,[1:4]*Freq,Fs,NumberPeriods)
 
 % use fft/ifft on the complete trial duration
 filtered_signal = artacs.dft.complete(Signal,Freq,Fs)
