@@ -10,7 +10,8 @@ resample_flag   = (period ~= int32(period));
 trueL           = length(Signal);
 trueFs          = Fs;          
 
-if resample_flag %upsample signal to make period length an integer
+%upsample signal to make period length an integer
+if resample_flag 
     period      = ceil(period);
     Fs          = period*Freq;
     Signal      = resample(Signal,Fs,trueFs);        
@@ -20,7 +21,6 @@ InitSignal  = Signal;
 % Select Period Starting Seeds
 if nargin < 4, PeriodResolution = 'random'; end
 if strcmpi(PeriodResolution,'default') 
-    %PeriodResolution = 100;
     PeriodResolution = 'random';
 end
 
@@ -35,40 +35,44 @@ elseif isnumeric(PeriodResolution)
     P           = period:-1:1;
     P           = P(fix(1:PeriodResolution:end));
     if isempty(P), P = 1; end
-
+    
 end
 
 
 F           =  [];
 for PeriodShift = P
+    % initialize the signal based on a random (or resolution-determined) seed
+    Signal              = InitSignal(PeriodShift:end-PeriodShift+1);
+    
+    % remove components until artifact power is at least as low as in neighbouring frequencies
+    ArtifactPower       = calcpower(Signal,Freq,Fs);
+    BlockSignal         = signal2period(Signal,period);
+    
+    while ArtifactPower > 1       
+        BlockSignal         = removetemplate(BlockSignal);
+        ReconstructedSignal = period2signal(BlockSignal);
+        ArtifactPower       = calcpower(ReconstructedSignal,Freq,Fs);
+        
+    end
 
-Signal              = InitSignal(PeriodShift:end-PeriodShift+1);
-% remove components until artifact power is as low as neighbouring frequencies
-ArtifactPower       = calcpower(Signal,Freq,Fs);
-BlockSignal         = signal2period(Signal,period);
-
-IterNum     = 0;
-while ArtifactPower > 1
-    IterNum     = IterNum + 1;
-    BlockSignal         = removetemplate(BlockSignal);
-    ReconstructedSignal = period2signal(BlockSignal);
-    ArtifactPower       = calcpower(ReconstructedSignal,Freq,Fs);
+    % reshape,append 
+    FilteredSignal = period2signal(BlockSignal);
+    FilteredSignal = [NaN(1,PeriodShift-1),FilteredSignal,NaN(1,PeriodShift-1)];
+    while length(FilteredSignal) < length(InitSignal)
+        FilteredSignal = cat(2,FilteredSignal,NaN);
+    end
+    F              = cat(1,F,FilteredSignal);
+    
 end
-
-% reshape, append and detrend
-FilteredSignal = period2signal(BlockSignal);
-FilteredSignal = [NaN(1,PeriodShift-1),FilteredSignal,NaN(1,PeriodShift-1)];
-while length(FilteredSignal) < length(InitSignal)
-    FilteredSignal = cat(2,FilteredSignal,NaN);
-end
-F              = cat(1,F,FilteredSignal);
-end
+% Average the parallel seeds, and interpolate any NaNs induced by seeding 
 FilteredSignal = nanmean(F,1);
 FilteredSignal = interp1(find(~isnan(FilteredSignal)),FilteredSignal(~isnan(FilteredSignal)),1:length(FilteredSignal),'linear','extrap');
 
+% Upsample if necessary 
 if resample_flag
     FilteredSignal = resample(FilteredSignal,trueFs,Fs);
 end
+ 
 FilteredSignal = FilteredSignal(1:trueL);
 
 
@@ -103,8 +107,8 @@ end
 function ArtifactPower = calcpower(Signal,Freq,Fs)
     L               = length(Signal);
     artifact_idx    = round(Freq/Fs*L) + 1;
-    physio_idx1     = round((Freq-2)/Fs*L) + 1;
-    physio_idx2     = round((Freq+2)/Fs*L) + 1;
+    physio_idx1     = round((Freq-1)/Fs*L) + 1;
+    physio_idx2     = round((Freq+1)/Fs*L) + 1;
     ffx             = fft(Signal);
-    ArtifactPower   = abs(ffx(artifact_idx))./median(abs(ffx(physio_idx1:physio_idx2)));    
+    ArtifactPower   = abs(ffx(artifact_idx))./mean(abs(ffx(physio_idx1:physio_idx2)));    
 end
