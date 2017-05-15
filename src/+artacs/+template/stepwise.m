@@ -1,3 +1,4 @@
+% function FilteredSignal = stepwise(Signal,Freq,Fs,PeriodResolution)    
 % PeriodResolution sets the resolution of seed periods to prevent corner artifacts in Percent.
 % Defaults to five 'randomly' selected periods
 % PeriodResolution = 'random';
