@@ -29,7 +29,7 @@ if strcmpi(how_flag,'random')
 
         f1              = artacs.kernel.run(Signal,np,setup.tacsFreq,setup.Fs,st,ft,ta,it,dl,lt);     
         f2              = artacs.template.stepwise(Signal,setup.tacsFreq,setup.Fs);     
-        f3              = artacs.dft.local(Signal,setup.tacsFreq,setup.Fs,np);     
+        f3              = artacs.dft.causal(Signal,setup.tacsFreq,setup.Fs,np);     
         f4              = artacs.dft.complete(Signal,setup.tacsFreq,setup.Fs);     
         
         %plot(f)
@@ -73,7 +73,7 @@ if strcmpi(how_flag,'full')
 
                                     f1               = artacs.kernel.run(Signal,np,setup.tacsFreq,setup.Fs,st,ft,ta,it,dl,lt);     
                                     f2               = artacs.template.stepwise(Signal,setup.tacsFreq,setup.Fs);     
-                                    f3               = artacs.dft.local(Signal,setup.tacsFreq,setup.Fs,np);     
+                                    f3               = artacs.dft.causal(Signal,setup.tacsFreq,setup.Fs,np);     
                                     f4               = artacs.dft.complete(Signal,setup.tacsFreq,setup.Fs);       
                                     cnt = cnt+1;
                                     fprintf(1,'%2.0f of %2.0f\n',cnt,L)
