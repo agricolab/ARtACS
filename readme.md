@@ -1,4 +1,4 @@
-Repo contains source code for creating and filtering EEG data from _periodic, non-sinusoidal_ and _non-stationary_ tCS artifacts using ___weighted comb filters___.
+﻿Repo contains source code for creating and filtering EEG data from _periodic, non-sinusoidal_ and _non-stationary_ tCS artifacts using ___weighted comb filters___.
 
 Includes also code for artifact removal using ___adaptive DFT___ and ___adaptive PCA___, and for simulation of tACS recordings.
 
@@ -75,7 +75,4 @@ filtered_signal = artacs.dft.complete(Signal,Freq,Fs)
 
 - [ ] Allow filtering for non-integer frequencies
 - [ ] Translate the code to Python3
-- [ ] Proper Unit Tests
-- [ ] Extend Documentation
-- [ ] Write up results of evaluation on real data
 ---
