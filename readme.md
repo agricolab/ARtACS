@@ -3,7 +3,7 @@
 Includes also code for artifact removal using ___adaptive DFT___ and ___adaptive PCA___, and for simulation of tACS recordings.
 
 This module is shared under a [X11 license](LICENSE).
-Its development is supported by the [BMBF: FKZ 13GW0119](https://www.medizintechnologie.de/fileadmin/pdfs/Projektsteckbriefe_bekanntmachungen/IndiMedtech/13GW0119_Projektsteckbrief_NEU.pdf).
+Its development was supported by the [BMBF: FKZ 13GW0119](https://www.medizintechnologie.de/fileadmin/pdfs/Projektsteckbriefe_bekanntmachungen/IndiMedtech/13GW0119_Projektsteckbrief_NEU.pdf).
 
 [![DOI](https://zenodo.org/badge/87182503.svg)](https://zenodo.org/badge/latestdoi/87182503)
 
