@@ -1,6 +1,6 @@
 ﻿Repo contains source code for creating and filtering EEG data from _periodic, non-sinusoidal_ and _non-stationary_ tCS artifacts using ___weighted comb filters___.
 
-Includes also code for artifact removal using ___adaptive DFT___ and ___adaptive PCA___, and for simulation of tACS recordings.
+Includes also code for artifact removal using ___adaptive DFT___ and ___adaptive PCA___, and for simulation of tACS recordings. You might want to read the [accompanying pdf](https://github.com/agricolab/ArtACS_preprint/blob/master/docs/main.pdf) for more details about the differences and similarities to SMA and similar template averaging methods, and performance evaluation.
 
 This module is shared under a [X11 license](LICENSE).
 Its development was supported by the [BMBF: FKZ 13GW0119](https://www.medizintechnologie.de/fileadmin/pdfs/Projektsteckbriefe_bekanntmachungen/IndiMedtech/13GW0119_Projektsteckbrief_NEU.pdf).
